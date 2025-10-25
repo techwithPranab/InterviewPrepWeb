@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/connection';
 import InterviewGuide from '@/lib/models/InterviewGuide';
 import { authenticateToken } from '@/lib/middleware/auth';
+import mongoose from 'mongoose';
+
+// Ensure User model is registered before using populate
+import '@/lib/models/User';
 
 // GET - Fetch single interview guide by ID (admin only)
 export async function GET(
@@ -12,6 +16,14 @@ export async function GET(
     await connectDB();
 
     const { id } = await params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { message: 'Invalid interview guide ID format' },
+        { status: 400 }
+      );
+    }
 
     // Authenticate and check admin role
     const auth = authenticateToken(request);
@@ -53,6 +65,14 @@ export async function PUT(
     await connectDB();
 
     const { id } = await params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { message: 'Invalid interview guide ID format' },
+        { status: 400 }
+      );
+    }
 
     // Authenticate and check admin role
     const auth = authenticateToken(request);
@@ -112,6 +132,14 @@ export async function DELETE(
     await connectDB();
 
     const { id } = await params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { message: 'Invalid interview guide ID format' },
+        { status: 400 }
+      );
+    }
 
     // Authenticate and check admin role
     const auth = authenticateToken(request);

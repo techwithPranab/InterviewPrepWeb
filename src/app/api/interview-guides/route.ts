@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/connection';
 import InterviewGuide from '@/lib/models/InterviewGuide';
 
+// Ensure User model is registered before using populate
+import '@/lib/models/User';
+
 // GET - Fetch all published interview guides (public)
 export async function GET(request: NextRequest) {
   try {

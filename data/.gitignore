@@ -1,0 +1,12 @@
+# Data folder .gitignore
+
+# Allow templates (these are safe to commit)
+!templates/
+templates/*
+
+# Ignore all exports (these may contain sensitive or large data)
+exports/
+*.csv
+
+# But allow the README
+!README.md

@@ -20,7 +20,6 @@ import {
   Menu,
   MenuItem,
   Divider,
-  Container,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -325,9 +324,7 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
         }}
       >
         <Toolbar /> {/* Spacer for AppBar */}
-        <Container maxWidth="xl">
-          {children}
-        </Container>
+        {children}
       </Box>
     </Box>
     </ThemeProvider>

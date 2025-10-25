@@ -3,6 +3,9 @@ import connectDB from '@/lib/db/connection';
 import InterviewGuide from '@/lib/models/InterviewGuide';
 import { authenticateToken } from '@/lib/middleware/auth';
 
+// Ensure User model is registered before using populate
+import '@/lib/models/User';
+
 // GET - Fetch all interview guides (admin only)
 export async function GET(request: NextRequest) {
   try {
