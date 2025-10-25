@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seedAll.js",
+    "seed:skills": "node scripts/seed.js",
+    "seed:guides": "node scripts/seedInterviewGuides.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

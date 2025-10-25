@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await User.findById(authResult.decoded.userId).select('-password');
+    const user = await User.findById((authResult as any).decoded.userId).select('-password');
     
     if (!user) {
       return NextResponse.json(
@@ -63,7 +63,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const user = await User.findByIdAndUpdate(
-      authResult.decoded.userId,
+      (authResult as any).decoded.userId,
       filteredUpdates,
       { new: true, runValidators: true }
     ).select('-password');

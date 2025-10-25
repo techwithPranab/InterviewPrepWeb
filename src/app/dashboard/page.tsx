@@ -91,7 +91,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h2>
             <p className="mt-2 text-gray-600">
               Welcome back! Ready for your next mock interview?
             </p>

@@ -159,7 +159,7 @@ export default function InterviewSummaryPage() {
         <div className="px-4 py-6 sm:px-0">
           {/* Header */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Interview Summary</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Interview Summary</h2>
             <p className="mt-2 text-gray-600">
               Review your performance and get feedback on your interview session.
             </p>
