@@ -27,6 +27,8 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
+  Pagination,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -37,6 +39,7 @@ import {
   Download as DownloadIcon,
   Upload as UploadIcon,
   CloudUpload as CloudUploadIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 
 interface Question {
@@ -82,6 +85,11 @@ export default function AdminGuideEditorPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Search and pagination state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const questionsPerPage = 10;
   
   // Question Dialog
   const [questionDialog, setQuestionDialog] = useState({
@@ -585,21 +593,29 @@ export default function AdminGuideEditorPage() {
     });
   };
 
+  // Filter and paginate questions
+  const filteredQuestions = formData.questions.filter(question =>
+    question.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    question.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    question.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    question.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
+  const startIndex = (currentPage - 1) * questionsPerPage;
+  const paginatedQuestions = filteredQuestions.slice(startIndex, startIndex + questionsPerPage);
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push('/admin/interview-guides')}
-          sx={{ mb: 2 }}
-        >
-          Back to Guides
-        </Button>
-        <Typography variant="h4" component="h1">
-          {isEditMode ? 'Edit Interview Guide' : 'Create Interview Guide'}
-        </Typography>
-      </Box>
-
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
@@ -653,22 +669,22 @@ export default function AdminGuideEditorPage() {
               onChange={(e) => setFormData(prev => ({ ...prev, technology: e.target.value }))}
               placeholder="e.g., React, Node.js, AWS"
             />
-          </Box>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Difficulty *</InputLabel>
-            <Select
-              value={formData.difficulty}
-              label="Difficulty *"
-              required
-              onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value }))}
-            >
-              <MenuItem value="beginner">Beginner</MenuItem>
-              <MenuItem value="intermediate">Intermediate</MenuItem>
-              <MenuItem value="advanced">Advanced</MenuItem>
-              <MenuItem value="expert">Expert</MenuItem>
-            </Select>
-          </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Difficulty *</InputLabel>
+              <Select
+                value={formData.difficulty}
+                label="Difficulty *"
+                required
+                onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value }))}
+              >
+                <MenuItem value="beginner">Beginner</MenuItem>
+                <MenuItem value="intermediate">Intermediate</MenuItem>
+                <MenuItem value="advanced">Advanced</MenuItem>
+                <MenuItem value="expert">Expert</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>Tags</Typography>
@@ -714,7 +730,7 @@ export default function AdminGuideEditorPage() {
 
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Questions ({formData.questions.length})</Typography>
+              <Typography variant="h6">Questions ({filteredQuestions.length})</Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   variant="outlined"
@@ -748,30 +764,55 @@ export default function AdminGuideEditorPage() {
               </Box>
             </Box>
 
+            <TextField
+              fullWidth
+              placeholder="Search questions, answers, categories, or tags..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2 }}
+            />
+
             <List>
-              {formData.questions.map((question, index) => (
-                <ListItem key={`${question.question}-${index}`} sx={{ border: '1px solid #e0e0e0', mb: 1, borderRadius: 1 }}>
+              {paginatedQuestions.map((question, index) => (
+                <ListItem key={`${question.question}-${startIndex + index}`} sx={{ border: '1px solid #e0e0e0', mb: 1, borderRadius: 1 }}>
                   <ListItemText
-                    primary={`${index + 1}. ${question.question}`}
+                    primary={`${startIndex + index + 1}. ${question.question}`}
                     secondary={`Category: ${question.category} | Tags: ${question.tags.join(', ')}`}
                   />
                   <ListItemSecondaryAction>
-                    <IconButton edge="end" onClick={() => openQuestionDialog('edit', index)}>
+                    <IconButton edge="end" onClick={() => openQuestionDialog('edit', formData.questions.indexOf(question))}>
                       <EditIcon />
                     </IconButton>
-                    <IconButton edge="end" onClick={() => handleDeleteQuestion(index)} color="error">
+                    <IconButton edge="end" onClick={() => handleDeleteQuestion(formData.questions.indexOf(question))} color="error">
                       <DeleteIcon />
                     </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
             </List>
+
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  showFirstButton
+                  showLastButton
+                />
+              </Box>
+            )}
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button onClick={() => router.push('/admin/interview-guides')}>
-              Cancel
-            </Button>
             <Button
               type="submit"
               variant="contained"
