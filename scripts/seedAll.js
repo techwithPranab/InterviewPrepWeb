@@ -180,30 +180,6 @@ const skillsData = [
     ]
   },
   {
-    name: 'Git',
-    category: 'tool',
-    description: 'Version control system for tracking changes in code',
-    level: 'beginner',
-    isActive: true,
-    questionTemplates: [
-      {
-        template: 'Explain the difference between git merge and git rebase',
-        type: 'technical',
-        difficulty: 'intermediate'
-      },
-      {
-        template: 'How do you resolve merge conflicts in Git?',
-        type: 'technical',
-        difficulty: 'beginner'
-      },
-      {
-        template: 'What is the difference between git pull and git fetch?',
-        type: 'technical',
-        difficulty: 'beginner'
-      }
-    ]
-  },
-  {
     name: 'Communication',
     category: 'soft-skill',
     description: 'Ability to convey information effectively',
@@ -257,6 +233,246 @@ const skillsData = [
         template: 'How do you motivate team members during challenging projects?',
         type: 'behavioral',
         difficulty: 'advanced'
+      }
+    ]
+  },
+  {
+    name: 'Core Java',
+    category: 'programming',
+    description: 'Fundamental Java programming concepts and object-oriented programming',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'Explain the difference between abstract class and interface in Java',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'What is method overloading and overriding?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'Explain Java memory management and garbage collection',
+        type: 'technical',
+        difficulty: 'advanced'
+      }
+    ]
+  },
+  {
+    name: 'Spring Boot',
+    category: 'framework',
+    description: 'Spring Boot framework for building Java applications',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'What is Spring Boot and its advantages over Spring Framework?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'Explain Spring Boot auto-configuration',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you handle exception handling in Spring Boot?',
+        type: 'technical',
+        difficulty: 'intermediate'
+      }
+    ]
+  },
+  {
+    name: 'Spring MVC',
+    category: 'framework',
+    description: 'Spring Model-View-Controller framework for web applications',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'Explain the Spring MVC architecture and request flow',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'What is the role of DispatcherServlet in Spring MVC?',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you handle form validation in Spring MVC?',
+        type: 'technical',
+        difficulty: 'intermediate'
+      }
+    ]
+  },
+  {
+    name: 'Design Patterns',
+    category: 'other',
+    description: 'Software design patterns and architectural principles',
+    level: 'advanced',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'Explain the Singleton design pattern and its implementation',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'What is the Observer pattern and when would you use it?',
+        type: 'technical',
+        difficulty: 'advanced'
+      },
+      {
+        template: 'Explain the Factory pattern with examples',
+        type: 'technical',
+        difficulty: 'intermediate'
+      }
+    ]
+  },
+  {
+    name: 'Git',
+    category: 'tool',
+    description: 'Version control system for tracking changes in code',
+    level: 'beginner',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'Explain the difference between git merge and git rebase',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you resolve merge conflicts in Git?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'What is the difference between git pull and git fetch?',
+        type: 'technical',
+        difficulty: 'beginner'
+      }
+    ]
+  },
+  {
+    name: 'SQL Server',
+    category: 'database',
+    description: 'Microsoft SQL Server database management system',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'Explain the difference between INNER JOIN and LEFT JOIN',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'What are indexes and how do they improve query performance?',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'Explain stored procedures and their advantages',
+        type: 'technical',
+        difficulty: 'intermediate'
+      }
+    ]
+  },
+  {
+    name: 'Maven',
+    category: 'tool',
+    description: 'Build automation and dependency management tool for Java projects',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'What is Maven and what are its key features?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'Explain Maven lifecycle phases',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you manage dependencies in Maven?',
+        type: 'technical',
+        difficulty: 'beginner'
+      }
+    ]
+  },
+  {
+    name: 'Docker',
+    category: 'tool',
+    description: 'Containerization platform for application deployment',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'What is Docker and how does it differ from virtual machines?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'Explain Docker images, containers, and Dockerfile',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you optimize Docker images for production?',
+        type: 'technical',
+        difficulty: 'advanced'
+      }
+    ]
+  },
+  {
+    name: 'Gradle',
+    category: 'tool',
+    description: 'Build automation tool for multi-language software development',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'What is Gradle and how does it differ from Maven?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'Explain Gradle build script and tasks',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you create custom tasks in Gradle?',
+        type: 'technical',
+        difficulty: 'intermediate'
+      }
+    ]
+  },
+  {
+    name: 'Web Services',
+    category: 'framework',
+    description: 'RESTful and SOAP web services development',
+    level: 'intermediate',
+    isActive: true,
+    questionTemplates: [
+      {
+        template: 'What is the difference between REST and SOAP?',
+        type: 'technical',
+        difficulty: 'beginner'
+      },
+      {
+        template: 'Explain RESTful web service principles',
+        type: 'technical',
+        difficulty: 'intermediate'
+      },
+      {
+        template: 'How do you handle authentication in web services?',
+        type: 'technical',
+        difficulty: 'intermediate'
       }
     ]
   }
@@ -514,6 +730,186 @@ async function getData() {
 }`,
         references: ['https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function'],
         order: 2
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Core Java Interview Questions - Complete Guide',
+    description: 'Comprehensive Java interview guide covering OOP concepts, collections, multithreading, exception handling, and JVM internals.',
+    domain: 'Backend',
+    technology: 'Core Java',
+    difficulty: 'intermediate',
+    tags: ['java', 'oop', 'collections', 'multithreading', 'jvm'],
+    questions: [
+      {
+        question: 'What is the difference between abstract class and interface in Java?',
+        answer: 'Abstract classes can have both abstract and concrete methods, constructors, instance variables, and access modifiers. Interfaces (before Java 8) could only have abstract methods and constants. From Java 8+, interfaces can have default and static methods. A class can extend only one abstract class but implement multiple interfaces. Use abstract classes for "is-a" relationships and interfaces for "can-do" relationships.',
+        category: 'OOP Concepts',
+        tags: ['abstract-class', 'interface', 'inheritance'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Spring Boot Interview Questions - Comprehensive Guide',
+    description: 'Master Spring Boot interviews with questions on auto-configuration, dependency injection, REST APIs, data access, and microservices.',
+    domain: 'Backend',
+    technology: 'Spring Boot',
+    difficulty: 'intermediate',
+    tags: ['spring-boot', 'java', 'microservices', 'rest-api', 'dependency-injection'],
+    questions: [
+      {
+        question: 'What is Spring Boot and what are its key advantages?',
+        answer: 'Spring Boot is an opinionated framework that simplifies Spring application development. Key advantages: Auto-configuration (reduces boilerplate), Embedded servers (Tomcat, Jetty), Starter dependencies (simplified dependency management), Production-ready features (health checks, metrics), Opinionated defaults, and Convention over configuration approach.',
+        category: 'Core Concepts',
+        tags: ['spring-boot', 'auto-configuration', 'embedded-server'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Spring MVC Interview Questions - Web Development Guide',
+    description: 'Complete Spring MVC interview preparation covering MVC architecture, controllers, view resolution, form handling, and REST services.',
+    domain: 'Backend',
+    technology: 'Spring MVC',
+    difficulty: 'intermediate',
+    tags: ['spring-mvc', 'web-development', 'controllers', 'rest', 'view-resolution'],
+    questions: [
+      {
+        question: 'Explain the Spring MVC architecture and request flow.',
+        answer: 'Spring MVC follows Model-View-Controller pattern. Request flow: 1) DispatcherServlet receives request, 2) HandlerMapping maps request to controller, 3) Controller processes request and returns ModelAndView, 4) ViewResolver resolves view name to actual view, 5) View renders response with model data, 6) Response sent back to client.',
+        category: 'Architecture',
+        tags: ['mvc-pattern', 'dispatcherservlet', 'request-flow'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Design Patterns Interview Questions - Software Architecture',
+    description: 'Essential design patterns for interviews including Singleton, Factory, Observer, Strategy, and architectural patterns with real-world examples.',
+    domain: 'Backend',
+    technology: 'Design Patterns',
+    difficulty: 'advanced',
+    tags: ['design-patterns', 'architecture', 'singleton', 'factory', 'observer'],
+    questions: [
+      {
+        question: 'Explain the Singleton design pattern and its implementation approaches.',
+        answer: 'Singleton ensures only one instance of a class exists. Implementation approaches: 1) Eager initialization (thread-safe but wastes memory), 2) Lazy initialization (not thread-safe), 3) Thread-safe lazy initialization (synchronized method - performance issue), 4) Double-checked locking, 5) Enum singleton (best approach). Use cases: Database connections, logging, configuration settings.',
+        category: 'Creational Patterns',
+        tags: ['singleton', 'thread-safety', 'lazy-loading'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Git Interview Questions - Version Control Mastery',
+    description: 'Master Git version control with questions on branching, merging, rebasing, conflict resolution, and collaborative workflows.',
+    domain: 'DevOps',
+    technology: 'Git',
+    difficulty: 'beginner',
+    tags: ['git', 'version-control', 'branching', 'merging', 'collaboration'],
+    questions: [
+      {
+        question: 'What is the difference between git merge and git rebase?',
+        answer: 'Git merge creates a new commit that combines changes from two branches, preserving the commit history of both branches (creates a merge commit). Git rebase moves commits from one branch to another, rewriting commit history to create a linear history. Merge preserves context and is safer for shared branches. Rebase creates cleaner history but should not be used on public branches.',
+        category: 'Branching',
+        tags: ['merge', 'rebase', 'commit-history'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'SQL Server Interview Questions - Database Administration',
+    description: 'Comprehensive SQL Server guide covering queries, indexing, stored procedures, performance tuning, and database design principles.',
+    domain: 'Database',
+    technology: 'SQL Server',
+    difficulty: 'intermediate',
+    tags: ['sql-server', 'database', 'queries', 'indexing', 'performance'],
+    questions: [
+      {
+        question: 'Explain the different types of JOINs in SQL Server.',
+        answer: 'INNER JOIN: Returns records matching in both tables. LEFT JOIN: Returns all records from left table and matching from right. RIGHT JOIN: Returns all records from right table and matching from left. FULL OUTER JOIN: Returns all records from both tables. CROSS JOIN: Returns Cartesian product of both tables. SELF JOIN: Joins table with itself.',
+        category: 'Queries',
+        tags: ['joins', 'inner-join', 'outer-join'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Maven Interview Questions - Build Automation',
+    description: 'Master Maven build tool with questions on project structure, lifecycle, dependencies, plugins, and multi-module projects.',
+    domain: 'DevOps',
+    technology: 'Maven',
+    difficulty: 'intermediate',
+    tags: ['maven', 'build-tool', 'dependencies', 'lifecycle', 'plugins'],
+    questions: [
+      {
+        question: 'What is Maven and what are its key benefits?',
+        answer: 'Maven is a build automation and dependency management tool for Java projects. Key benefits: 1) Standardized project structure, 2) Dependency management with transitive dependencies, 3) Build lifecycle management, 4) Integration with IDEs, 5) Repository system for artifact sharing, 6) Plugin ecosystem for extending functionality, 7) Multi-module project support.',
+        category: 'Core Concepts',
+        tags: ['maven', 'dependency-management', 'build-lifecycle'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Docker Interview Questions - Containerization Guide',
+    description: 'Complete Docker containerization guide covering images, containers, Dockerfile, networking, volumes, and orchestration basics.',
+    domain: 'DevOps',
+    technology: 'Docker',
+    difficulty: 'intermediate',
+    tags: ['docker', 'containerization', 'dockerfile', 'images', 'orchestration'],
+    questions: [
+      {
+        question: 'What is Docker and how does it differ from virtual machines?',
+        answer: 'Docker is a containerization platform that packages applications with their dependencies. Differences from VMs: 1) Containers share host OS kernel (VMs have separate OS), 2) Lighter weight and faster startup, 3) Better resource utilization, 4) Application-level isolation vs hardware-level, 5) Portable across environments, 6) Container images are smaller than VM images.',
+        category: 'Fundamentals',
+        tags: ['containerization', 'virtual-machines', 'isolation'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Gradle Interview Questions - Build System Mastery',
+    description: 'Master Gradle build system with questions on build scripts, tasks, plugins, dependency management, and multi-project builds.',
+    domain: 'DevOps',
+    technology: 'Gradle',
+    difficulty: 'intermediate',
+    tags: ['gradle', 'build-system', 'groovy', 'tasks', 'plugins'],
+    questions: [
+      {
+        question: 'What is Gradle and how does it differ from Maven?',
+        answer: 'Gradle is a flexible build automation tool using Groovy/Kotlin DSL. Differences from Maven: 1) Uses Groovy/Kotlin scripts vs XML, 2) More flexible and programmable, 3) Incremental builds and build cache, 4) Better performance, 5) Custom task creation easier, 6) Supports multiple languages, 7) Gradle Wrapper for version consistency.',
+        category: 'Build Systems',
+        tags: ['gradle', 'maven', 'build-automation'],
+        order: 1
+      }
+    ],
+    isPublished: true
+  },
+  {
+    title: 'Web Services Interview Questions - API Development',
+    description: 'Comprehensive web services guide covering REST, SOAP, API design, authentication, documentation, and best practices.',
+    domain: 'Backend',
+    technology: 'Web Services',
+    difficulty: 'intermediate',
+    tags: ['web-services', 'rest', 'soap', 'api', 'microservices'],
+    questions: [
+      {
+        question: 'What is the difference between REST and SOAP web services?',
+        answer: 'REST: Uses HTTP methods (GET, POST, PUT, DELETE), lightweight JSON/XML, stateless, cacheable, uniform interface. SOAP: XML-based protocol, supports WS-* standards, built-in error handling, stateful/stateless, more secure with WS-Security. REST is simpler and faster, SOAP is more robust for enterprise applications with complex requirements.',
+        category: 'Web Service Types',
+        tags: ['rest', 'soap', 'http', 'xml'],
+        order: 1
       }
     ],
     isPublished: true
