@@ -53,7 +53,7 @@ function InterviewSessionPage() {
     }
 
     fetchSession();
-  }, [sessionId, router]);
+  }, [sessionId]);
 
   useEffect(() => {
     // Timer countdown

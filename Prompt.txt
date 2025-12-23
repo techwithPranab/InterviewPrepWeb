@@ -1,0 +1,6 @@
+You are senior software developer in Nodejs and ReactJS,I want to implement following task
+1) IN Manage Interview Guides page in Amin Module, the metrices are showing for the current page only, it should show for total 
+2) Reduce the font size in Analytics page in Admin Module
+3) Failed to load settings is showing in Setting page in admin module
+
+Create a todo list and implement the task

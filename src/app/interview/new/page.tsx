@@ -104,22 +104,45 @@ export default function NewInterviewPage() {
     setCreating(true);
 
     try {
-      // For now, we'll just navigate to a mock interview session
-      // In the future, this would create an interview session in the backend
-      const sessionData = {
-        skills: interviewConfig.selectedSkills,
-        duration: parseInt(interviewConfig.duration),
-        difficulty: interviewConfig.difficulty,
-        includeBehavioral: interviewConfig.includeaBehavioral,
-        includeTechnical: interviewConfig.includeTechnical,
-        startTime: new Date().toISOString()
-      };
-
-      // Store session data temporarily in localStorage
-      localStorage.setItem('currentInterview', JSON.stringify(sessionData));
+      const token = localStorage.getItem('token');
       
-      // Navigate to interview session
-      router.push('/interview/session');
+      // Calculate question count based on duration
+      const questionCount = Math.ceil(parseInt(interviewConfig.duration) / 5);
+      
+      // Create interview session via API
+      const response = await fetch('/api/interview/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: `Mock Interview - ${new Date().toLocaleDateString()}`,
+          skills: interviewConfig.selectedSkills,
+          duration: parseInt(interviewConfig.duration),
+          difficulty: interviewConfig.difficulty,
+          type: interviewConfig.includeTechnical && interviewConfig.includeaBehavioral 
+            ? 'mixed' 
+            : interviewConfig.includeTechnical 
+              ? 'technical' 
+              : 'behavioral',
+          questionCount
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create interview session');
+      }
+
+      const data = await response.json();
+      
+      // Store session ID and navigate to session
+      localStorage.setItem('currentInterviewId', data.session._id);
+      localStorage.removeItem('currentInterview'); // Clean up old localStorage data
+      
+      // Navigate to interview session with the session ID
+      router.push(`/interview/session?id=${data.session._id}`);
     } catch (error) {
       console.error('Error starting interview:', error);
       alert('Failed to start interview. Please try again.');
