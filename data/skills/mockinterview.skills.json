@@ -1,0 +1,506 @@
+[
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf506"
+    },
+    "name": "Docker",
+    "category": "tool",
+    "description": "Containerization platform for application deployment",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4e4"
+    },
+    "name": "Problem Solving",
+    "category": "soft-skill",
+    "description": "Ability to analyze and solve complex problems",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf502"
+    },
+    "name": "Maven",
+    "category": "tool",
+    "description": "Build automation and dependency management tool for Java projects",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4f2"
+    },
+    "name": "Spring MVC",
+    "category": "framework",
+    "description": "Spring Model-View-Controller framework for web applications",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf50e"
+    },
+    "name": "Web Services",
+    "category": "framework",
+    "description": "RESTful and SOAP web services development",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4ee"
+    },
+    "name": "Spring Boot",
+    "category": "framework",
+    "description": "Spring Boot framework for building Java applications",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4cd"
+    },
+    "name": "React",
+    "category": "framework",
+    "description": "JavaScript library for building user interfaces",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4d9"
+    },
+    "name": "MongoDB",
+    "category": "database",
+    "description": "NoSQL document database",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4fa"
+    },
+    "name": "Git",
+    "category": "tool",
+    "description": "Version control system for tracking changes in code",
+    "level": "beginner",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4f6"
+    },
+    "name": "Design Patterns",
+    "category": "other",
+    "description": "Software design patterns and architectural principles",
+    "level": "advanced",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4fe"
+    },
+    "name": "SQL Server",
+    "category": "database",
+    "description": "Microsoft SQL Server database management system",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4d5"
+    },
+    "name": "Python",
+    "category": "programming",
+    "description": "High-level programming language for various applications",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4dd"
+    },
+    "name": "AWS",
+    "category": "other",
+    "description": "Amazon Web Services cloud platform",
+    "level": "advanced",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4ea"
+    },
+    "name": "Core Java",
+    "category": "programming",
+    "description": "Fundamental Java programming concepts and object-oriented programming",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4e1"
+    },
+    "name": "Communication",
+    "category": "soft-skill",
+    "description": "Ability to convey information effectively",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4c9"
+    },
+    "name": "JavaScript",
+    "category": "programming",
+    "description": "Dynamic programming language for web development",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf50a"
+    },
+    "name": "Gradle",
+    "category": "tool",
+    "description": "Build automation tool for multi-language software development",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.926Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4d1"
+    },
+    "name": "Node.js",
+    "category": "framework",
+    "description": "JavaScript runtime for server-side development",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf4e7"
+    },
+    "name": "Leadership",
+    "category": "soft-skill",
+    "description": "Ability to guide and inspire teams",
+    "level": "advanced",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-25T22:07:53.925Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf600"
+    },
+    "name": "Grafana",
+    "category": "tool",
+    "description": "Open-source platform for monitoring and observability with beautiful dashboards",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf604"
+    },
+    "name": "Azure DevOps",
+    "category": "tool",
+    "description": "Microsoft's cloud-based platform for development collaboration and CI/CD",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf608"
+    },
+    "name": "Zabbix",
+    "category": "tool",
+    "description": "Open-source monitoring solution for networks, servers, and applications",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf612"
+    },
+    "name": "SonarQube",
+    "category": "tool",
+    "description": "Platform for continuous code quality inspection and security vulnerability detection",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf616"
+    },
+    "name": "JFrog Artifactory",
+    "category": "tool",
+    "description": "Universal artifact repository manager for binary artifacts",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf620"
+    },
+    "name": "Prometheus",
+    "category": "tool",
+    "description": "Open-source monitoring and alerting toolkit for cloud-native applications",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf624"
+    },
+    "name": "DataDog",
+    "category": "tool",
+    "description": "Cloud monitoring and analytics platform for infrastructure and applications",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf628"
+    },
+    "name": "AppDynamics",
+    "category": "tool",
+    "description": "Application performance monitoring and management platform",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "68fd4a3955e9775c4d3bf632"
+    },
+    "name": "Jenkins",
+    "category": "tool",
+    "description": "Open-source automation server for continuous integration and delivery",
+    "level": "intermediate",
+    "isActive": true,
+    "usageCount": 0,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-23T00:00:00.000Z"
+    }
+  }
+]

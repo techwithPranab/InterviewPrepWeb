@@ -115,7 +115,7 @@ export default function AdminAnalyticsPage() {
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
+      <Typography variant="h5" component="h1" sx={{ mb: 3 }}>
         Analytics Dashboard
       </Typography>
 
@@ -128,10 +128,10 @@ export default function AdminAnalyticsPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   {card.icon}
                   <Box sx={{ ml: 2 }}>
-                    <Typography variant="h6" component="div">
+                    <Typography variant="body1" component="div">
                       {card.title}
                     </Typography>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
                       {card.value}
                     </Typography>
                   </Box>
@@ -161,7 +161,7 @@ export default function AdminAnalyticsPage() {
       </Box>
 
       {/* Monthly Trends */}
-      <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
+      <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
         Monthly Trends
       </Typography>
 
@@ -169,7 +169,7 @@ export default function AdminAnalyticsPage() {
         <Box sx={{ flex: '1 1 300px' }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="body1" gutterBottom>
                 User Registration Trend
               </Typography>
               <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -184,7 +184,7 @@ export default function AdminAnalyticsPage() {
         <Box sx={{ flex: '1 1 300px' }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="body1" gutterBottom>
                 Session Activity Trend
               </Typography>
               <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -199,7 +199,7 @@ export default function AdminAnalyticsPage() {
         <Box sx={{ flex: '1 1 300px' }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="body1" gutterBottom>
                 Question Usage Trend
               </Typography>
               <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -213,7 +213,7 @@ export default function AdminAnalyticsPage() {
       </Box>
 
       {/* Recent Activity */}
-      <Typography variant="h5" component="h2" sx={{ mt: 4, mb: 2 }}>
+      <Typography variant="h6" component="h2" sx={{ mt: 4, mb: 2 }}>
         Recent Activity
       </Typography>
 

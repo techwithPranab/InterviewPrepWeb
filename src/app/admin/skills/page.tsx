@@ -21,6 +21,7 @@ import {
   Alert,
   Chip,
   InputAdornment,
+  Pagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -44,6 +45,8 @@ export default function AdminSkillsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [formData, setFormData] = useState({
@@ -55,13 +58,18 @@ export default function AdminSkillsPage() {
 
   useEffect(() => {
     fetchSkills();
-  }, []);
+  }, [page]);
 
   const fetchSkills = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/skills', {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: '10',
+      });
+
+      const response = await fetch(`/api/admin/skills?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -73,6 +81,7 @@ export default function AdminSkillsPage() {
 
       const data = await response.json();
       setSkills(data.skills || []);
+      setTotalPages(data.pagination?.pages || 1);
     } catch (err) {
       console.error('Failed to fetch skills:', err);
       setError('Failed to load skills');
@@ -139,6 +148,7 @@ export default function AdminSkillsPage() {
 
       setSuccess(editingSkill ? 'Skill updated successfully' : 'Skill created successfully');
       handleCloseDialog();
+      setPage(1);
       fetchSkills();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -166,6 +176,7 @@ export default function AdminSkillsPage() {
       }
 
       setSuccess('Skill deleted successfully');
+      setPage(1);
       fetchSkills();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -174,10 +185,9 @@ export default function AdminSkillsPage() {
     }
   };
 
-  const filteredSkills = skills.filter(skill =>
-    skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    skill.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
 
   return (
     <Box>
@@ -229,7 +239,7 @@ export default function AdminSkillsPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredSkills.map((skill) => (
+            {skills.map((skill) => (
               <TableRow key={skill._id} hover>
                 <TableCell>
                   <Typography variant="body2" fontWeight="500">
@@ -282,6 +292,19 @@ export default function AdminSkillsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+          />
+        </Box>
+      )}
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>

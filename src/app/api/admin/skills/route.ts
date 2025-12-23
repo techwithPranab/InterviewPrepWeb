@@ -16,12 +16,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+
+    const skip = (page - 1) * limit;
+
     const skills = await Skill.find({})
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Skill.countDocuments();
 
     return NextResponse.json({
       message: 'Skills retrieved successfully',
-      skills
+      skills,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+        limit
+      }
     });
 
   } catch (error) {

@@ -67,6 +67,11 @@ export default function AdminInterviewGuidesPage() {
     open: false,
     guideId: null,
   });
+  const [stats, setStats] = useState<{
+    total: number;
+    published: number;
+    views: number;
+  } | null>(null);
   
   // Filters
   const [filters, setFilters] = useState({
@@ -88,6 +93,7 @@ export default function AdminInterviewGuidesPage() {
 
   useEffect(() => {
     fetchGuides();
+    fetchStats();
   }, [page, filters]);
 
   const fetchGuides = async () => {
@@ -133,6 +139,35 @@ export default function AdminInterviewGuidesPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        return;
+      }
+
+      const response = await fetch('/api/admin/interview-guides/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 403) {
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch stats');
+      }
+
+      const data = await response.json();
+      setStats(data);
+    } catch (err) {
+      console.error('Failed to load stats:', err);
     }
   };
 
@@ -193,7 +228,7 @@ export default function AdminInterviewGuidesPage() {
                 Total Guides
               </Typography>
               <Typography variant="h4">
-                {guides.length}
+                {stats?.total || 0}
               </Typography>
             </CardContent>
           </Card>
@@ -205,7 +240,7 @@ export default function AdminInterviewGuidesPage() {
                 Published
               </Typography>
               <Typography variant="h4" color="success.main">
-                {guides.filter(g => g.isPublished).length}
+                {stats?.published || 0}
               </Typography>
             </CardContent>
           </Card>
@@ -217,7 +252,7 @@ export default function AdminInterviewGuidesPage() {
                 Drafts
               </Typography>
               <Typography variant="h4" color="warning.main">
-                {guides.filter(g => !g.isPublished).length}
+                {(stats?.total || 0) - (stats?.published || 0)}
               </Typography>
             </CardContent>
           </Card>
@@ -229,7 +264,7 @@ export default function AdminInterviewGuidesPage() {
                 Total Views
               </Typography>
               <Typography variant="h4" color="primary.main">
-                {guides.reduce((sum, g) => sum + g.views, 0)}
+                {stats?.views || 0}
               </Typography>
             </CardContent>
           </Card>
