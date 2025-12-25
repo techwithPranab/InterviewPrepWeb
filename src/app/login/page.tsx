@@ -34,8 +34,20 @@ export default function LoginPage() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Redirect to dashboard
-        router.push('/dashboard');
+        // Dispatch auth change event to update Header
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('authChange'));
+        }
+        
+        // Redirect to dashboard based on role
+        const userRole = data.user.role;
+        if (userRole === 'interviewer') {
+          router.push('/interviewer-dashboard');
+        } else if (userRole === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(data.message || 'Login failed');
       }

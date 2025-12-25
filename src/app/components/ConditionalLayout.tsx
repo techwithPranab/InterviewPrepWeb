@@ -9,6 +9,9 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   
   // Don't show header and footer on admin pages
   const isAdminPage = pathname?.startsWith('/admin');
+  
+  // Don't show footer on interview pages
+  const isInterviewPage = pathname?.startsWith('/interview');
 
   if (isAdminPage) {
     return <>{children}</>;
@@ -18,7 +21,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     <>
       <Header />
       <main>{children}</main>
-      <Footer />
+      {!isInterviewPage && <Footer />}
     </>
   );
 }

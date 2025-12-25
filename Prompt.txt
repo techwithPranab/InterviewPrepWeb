@@ -1,6 +1,6 @@
 You are senior software developer in Nodejs and ReactJS,I want to implement following task
-1) IN Manage Interview Guides page in Amin Module, the metrices are showing for the current page only, it should show for total 
-2) Reduce the font size in Analytics page in Admin Module
-3) Failed to load settings is showing in Setting page in admin module
-
-Create a todo list and implement the task
+1) After interviwer login, header menu as not refreshing , login and signup is still showing
+2) The left menu links are shoiwing 404 error
+3) Layout is not showing properly i,e center section page is not showing properly
+4) In Admin Role, New USer screen the new roles are not refelcting
+5) No pages for list of Interview taken or scheduled or any metrices related to Interview

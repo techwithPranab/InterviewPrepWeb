@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { generateInterviewPDF } from '@/lib/utils/pdfExport';
+import { SocialShare } from '@/app/components/SocialShare';
 
 interface Question {
   questionId: string;
@@ -62,10 +64,25 @@ export default function InterviewReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'feedback'>('overview');
+  const [exportingPDF, setExportingPDF] = useState(false);
+  const [userName, setUserName] = useState('User');
 
   useEffect(() => {
     fetchSession();
+    fetchUserName();
   }, [sessionId]);
+
+  const fetchUserName = () => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        setUserName(user.name || user.email || 'User');
+      }
+    } catch (err) {
+      console.error('Failed to load user name:', err);
+    }
+  };
 
   const fetchSession = async () => {
     try {
@@ -94,8 +111,17 @@ export default function InterviewReportPage() {
   };
 
   const handleExportPDF = () => {
-    // Placeholder for PDF export functionality
-    alert('PDF export functionality coming soon!');
+    if (!session) return;
+    
+    try {
+      setExportingPDF(true);
+      generateInterviewPDF(session, userName);
+    } catch (err) {
+      console.error('PDF export error:', err);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setExportingPDF(false);
+    }
   };
 
   const getScoreColor = (score: number) => {
@@ -157,12 +183,30 @@ export default function InterviewReportPage() {
                 Completed on {session.completedAt ? new Date(session.completedAt).toLocaleDateString() : 'N/A'}
               </p>
             </div>
-            <button
-              onClick={handleExportPDF}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-            >
-              📄 Export PDF
-            </button>
+            <div className="flex items-center gap-3">
+              <SocialShare
+                sessionId={sessionId}
+                title={session.title}
+                score={avgScore}
+                skills={session.skills}
+              />
+              <button
+                onClick={handleExportPDF}
+                disabled={exportingPDF}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {exportingPDF ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    📄 Export PDF
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>

@@ -29,7 +29,12 @@ export async function POST(request: NextRequest) {
       difficulty = 'intermediate',
       type = 'technical',
       questionCount = 5,
-      resumeContent = ''
+      resumeContent = '',
+      interviewType = 'online', // online or in-person
+      scheduledFor = null, // for in-person interviews
+      meetingLink = '', // for online interviews
+      includeBehavioral = false,
+      includeTechnical = true
     } = body;
 
     // Validate required fields
@@ -47,37 +52,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate AI questions
+    // Generate AI questions based on interview type
     let questions = [];
     try {
-      const aiQuestions = await aiService.generateQuestions({
-        skills,
-        resumeContent,
-        difficulty,
-        questionCount,
-        questionType: type,
-        experience: 'intermediate'
-      });
+      if (interviewType === 'online') {
+        // Use enhanced online interview question generation
+        const aiQuestions = await aiService.generateOnlineInterviewQuestions({
+          skills,
+          difficulty,
+          questionCount,
+          experience: 'intermediate',
+          duration
+        });
 
-      // Format questions for the session model
-      questions = aiQuestions.map((q: any, index: number) => ({
-        question: q.question,
-        type: type === 'mixed' ? (index % 2 === 0 ? 'technical' : 'behavioral') : type,
-        difficulty,
-        expectedAnswer: q.expectedAnswer || q.hints || ''
-      }));
+        // Format questions for the session model
+        questions = aiQuestions.map((q: any) => ({
+          question: q.question,
+          type: q.type || 'technical',
+          difficulty: q.difficulty || 5,
+          expectedAnswer: q.expectedKeywords?.join(', ') || '',
+          timeLimit: q.timeLimit || '3',
+          assessmentCriteria: q.assessmentCriteria || ['technical_accuracy', 'communication']
+        }));
+      } else {
+        // Use standard question generation for in-person interviews
+        const aiQuestions = await aiService.generateQuestions({
+          skills,
+          resumeContent,
+          difficulty,
+          questionCount,
+          questionType: type,
+          experience: 'intermediate',
+          interviewType
+        });
+
+        // Format questions for the session model
+        questions = aiQuestions.map((q: any, index: number) => ({
+          question: q.question,
+          type: type === 'mixed' ? (index % 2 === 0 ? 'technical' : 'behavioral') : type,
+          difficulty,
+          expectedAnswer: q.expectedAnswer || q.hints || '',
+          timeLimit: '5', // Default for in-person
+          assessmentCriteria: ['technical_accuracy', 'communication', 'problem_solving']
+        }));
+      }
     } catch (aiError) {
       console.error('AI question generation failed:', aiError);
       // Fallback to default questions if AI fails
-      questions = skills.slice(0, questionCount).map((skill: string) => ({
+      questions = skills.slice(0, questionCount).map((skill: string, index: number) => ({
         question: `Explain your experience with ${skill} and provide examples of projects where you used it.`,
-        type: 'technical',
+        type: includeBehavioral && index % 2 === 1 ? 'behavioral' : 'technical',
         difficulty,
-        expectedAnswer: `The candidate should discuss practical applications of ${skill}, specific projects, challenges faced, and solutions implemented.`
+        expectedAnswer: `The candidate should discuss practical applications of ${skill}, specific projects, challenges faced, and solutions implemented.`,
+        timeLimit: interviewType === 'online' ? '3' : '5',
+        assessmentCriteria: ['technical_accuracy', 'communication']
       }));
     }
 
-    // Create interview session
+    // Create interview session with enhanced data
     const session = await InterviewSession.create({
       candidate: userId,
       title,
@@ -88,7 +120,16 @@ export async function POST(request: NextRequest) {
       duration,
       status: 'in-progress',
       questions,
-      startedAt: new Date()
+      startedAt: new Date(),
+      interviewType, // Add interview type
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+      meetingLink: interviewType === 'online' ? meetingLink : null,
+      metadata: {
+        includeBehavioral,
+        includeTechnical,
+        questionCount,
+        aiGenerated: true
+      }
     });
 
     return NextResponse.json({

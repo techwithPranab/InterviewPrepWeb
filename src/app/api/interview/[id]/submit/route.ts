@@ -121,7 +121,13 @@ export async function POST(
 
     // Update the question with answer and evaluation
     session.questions[questionIndex] = {
-      ...(question as any),
+      questionId: question.questionId,
+      question: question.question,
+      type: question.type,
+      expectedAnswer: question.expectedAnswer,
+      difficulty: question.difficulty,
+      timeLimit: question.timeLimit || "3",
+      assessmentCriteria: question.assessmentCriteria || ['technical_accuracy', 'communication'],
       answer: {
         text: answer,
         timestamp: new Date()

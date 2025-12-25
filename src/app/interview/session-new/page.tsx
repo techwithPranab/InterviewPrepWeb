@@ -2,6 +2,10 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAudioRecorder } from '@/app/hooks/useAudioRecorder';
+import { AudioRecorder } from '@/app/components/AudioRecorder';
+import { useVideoRecorder } from '@/app/hooks/useVideoRecorder';
+import { VideoRecorder } from '@/app/components/VideoRecorder';
 
 interface Question {
   questionId: string;
@@ -45,6 +49,29 @@ function InterviewSessionPage() {
   const [error, setError] = useState('');
   const [evaluation, setEvaluation] = useState<any>(null);
   const [showEvaluation, setShowEvaluation] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [responseMode, setResponseMode] = useState<'text' | 'audio' | 'video'>('text');
+
+  // Audio recorder hook
+  const audioRecorder = useAudioRecorder({
+    onRecordingComplete: async (audioBlob, audioDuration) => {
+      console.log('Recording completed:', { size: audioBlob.size, duration: audioDuration });
+    },
+    onError: (error) => {
+      setError(`Audio recording error: ${error.message}`);
+    }
+  });
+
+  // Video recorder hook
+  const videoRecorder = useVideoRecorder({
+    onRecordingComplete: async (videoBlob, videoDuration) => {
+      console.log('Video recording completed:', { size: videoBlob.size, duration: videoDuration });
+    },
+    onError: (error) => {
+      setError(`Video recording error: ${error.message}`);
+    }
+  });
 
   useEffect(() => {
     if (!sessionId) {
@@ -161,6 +188,9 @@ function InterviewSessionPage() {
         });
       }
 
+      // Clear audio recording if any
+      audioRecorder.clearRecording();
+
       // Auto-advance after showing evaluation
       setTimeout(() => {
         setShowEvaluation(false);
@@ -177,6 +207,202 @@ function InterviewSessionPage() {
       setError('Failed to submit answer. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSubmitAudioAnswer = async () => {
+    if (!audioRecorder.audioBlob || uploadingAudio) return;
+
+    setUploadingAudio(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const currentQ = session!.questions[currentQuestion];
+
+      // Upload audio file
+      const formData = new FormData();
+      formData.append('audio', audioRecorder.audioBlob, `audio-${Date.now()}.webm`);
+      formData.append('sessionId', sessionId || '');
+      formData.append('questionId', currentQ.questionId);
+
+      const uploadResponse = await fetch('/api/interview/audio/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload audio');
+      }
+
+      const uploadData = await uploadResponse.json();
+
+      // Submit audio answer (using a placeholder text for now)
+      const timeSpent = audioRecorder.recordingTime;
+      const audioAnswer = `[Voice Response - Duration: ${timeSpent}s] Audio file: ${uploadData.filename}`;
+
+      const submitResponse = await fetch(`/api/interview/${sessionId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          questionId: currentQ.questionId,
+          answer: audioAnswer,
+          timeSpent,
+          audioUrl: uploadData.audioUrl
+        })
+      });
+
+      if (!submitResponse.ok) {
+        throw new Error('Failed to submit audio answer');
+      }
+
+      const submitData = await submitResponse.json();
+
+      // Show evaluation feedback
+      setEvaluation(submitData.evaluation);
+      setShowEvaluation(true);
+
+      // Update session progress
+      if (session) {
+        const updatedQuestions = [...session.questions];
+        updatedQuestions[currentQuestion] = {
+          ...updatedQuestions[currentQuestion],
+          answer: audioAnswer,
+          timeSpent,
+          evaluation: submitData.evaluation
+        };
+        
+        setSession({
+          ...session,
+          questions: updatedQuestions,
+          answeredQuestions: submitData.answeredQuestions,
+          progress: submitData.progress
+        });
+      }
+
+      // Clear audio recording
+      audioRecorder.clearRecording();
+
+      // Auto-advance after showing evaluation
+      setTimeout(() => {
+        setShowEvaluation(false);
+        if (currentQuestion < session!.questions.length - 1) {
+          handleNextQuestion();
+        } else {
+          // Last question - complete interview
+          handleCompleteInterview();
+        }
+      }, 3000);
+
+    } catch (err) {
+      console.error('Failed to submit audio answer:', err);
+      setError('Failed to submit audio answer. Please try again.');
+    } finally {
+      setUploadingAudio(false);
+    }
+  };
+
+  const handleSubmitVideoAnswer = async () => {
+    if (!videoRecorder.videoBlob || uploadingVideo) return;
+
+    setUploadingVideo(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const currentQ = session!.questions[currentQuestion];
+
+      // Upload video file
+      const formData = new FormData();
+      formData.append('video', videoRecorder.videoBlob, `video-${Date.now()}.webm`);
+      formData.append('sessionId', sessionId || '');
+      formData.append('questionId', currentQ.questionId);
+
+      const uploadResponse = await fetch('/api/interview/video/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload video');
+      }
+
+      const uploadData = await uploadResponse.json();
+
+      // Submit video answer
+      const timeSpent = videoRecorder.recordingTime;
+      const videoAnswer = `[Video Response - Duration: ${timeSpent}s] Video file: ${uploadData.filename}`;
+
+      const submitResponse = await fetch(`/api/interview/${sessionId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          questionId: currentQ.questionId,
+          answer: videoAnswer,
+          timeSpent,
+          videoUrl: uploadData.videoUrl
+        })
+      });
+
+      if (!submitResponse.ok) {
+        throw new Error('Failed to submit video answer');
+      }
+
+      const submitData = await submitResponse.json();
+
+      // Show evaluation feedback
+      setEvaluation(submitData.evaluation);
+      setShowEvaluation(true);
+
+      // Update session progress
+      if (session) {
+        const updatedQuestions = [...session.questions];
+        updatedQuestions[currentQuestion] = {
+          ...updatedQuestions[currentQuestion],
+          answer: videoAnswer,
+          timeSpent,
+          evaluation: submitData.evaluation
+        };
+
+        setSession({
+          ...session,
+          questions: updatedQuestions,
+          answeredQuestions: submitData.answeredQuestions,
+          progress: submitData.progress
+        });
+      }
+
+      // Clear video recording
+      videoRecorder.clearRecording();
+
+      // Auto-advance after showing evaluation
+      setTimeout(() => {
+        setShowEvaluation(false);
+        if (currentQuestion < session!.questions.length - 1) {
+          handleNextQuestion();
+        } else {
+          // Last question - complete interview
+          handleCompleteInterview();
+        }
+      }, 3000);
+
+    } catch (err) {
+      console.error('Failed to submit video answer:', err);
+      setError('Failed to submit video answer. Please try again.');
+    } finally {
+      setUploadingVideo(false);
     }
   };
 
@@ -330,20 +556,101 @@ function InterviewSessionPage() {
               </h2>
             </div>
 
+            {/* Response Mode Tabs */}
+            {!currentQ.answer && (
+              <div className="mb-4 flex gap-2 border-b border-gray-200">
+                <button
+                  onClick={() => setResponseMode('text')}
+                  className={`px-4 py-2 font-medium text-sm transition-colors ${
+                    responseMode === 'text'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  📝 Text
+                </button>
+                <button
+                  onClick={() => setResponseMode('audio')}
+                  className={`px-4 py-2 font-medium text-sm transition-colors ${
+                    responseMode === 'audio'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  🎤 Audio
+                </button>
+                <button
+                  onClick={() => setResponseMode('video')}
+                  className={`px-4 py-2 font-medium text-sm transition-colors ${
+                    responseMode === 'video'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  🎥 Video
+                </button>
+              </div>
+            )}
+
             {/* Answer Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Your Answer:
-              </label>
-              <textarea
-                value={currentAnswer}
-                onChange={(e) => setCurrentAnswer(e.target.value)}
-                rows={10}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Type your detailed answer here... Be specific and provide examples where applicable."
-                disabled={showEvaluation || submitting}
-              />
+              {responseMode === 'text' && (
+                <>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Answer:
+                  </label>
+                  <textarea
+                    value={currentAnswer}
+                    onChange={(e) => setCurrentAnswer(e.target.value)}
+                    rows={10}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Type your detailed answer here... Be specific and provide examples where applicable."
+                    disabled={showEvaluation || submitting || uploadingAudio || uploadingVideo}
+                  />
+                </>
+              )}
             </div>
+
+            {/* Audio Recorder */}
+            {responseMode === 'audio' && !currentQ.answer && (
+              <div className="mt-4">
+                <AudioRecorder
+                  isRecording={audioRecorder.isRecording}
+                  isPaused={audioRecorder.isPaused}
+                  recordingTime={audioRecorder.recordingTime}
+                  audioUrl={audioRecorder.audioUrl}
+                  onStartRecording={audioRecorder.startRecording}
+                  onStopRecording={audioRecorder.stopRecording}
+                  onPauseRecording={audioRecorder.pauseRecording}
+                  onResumeRecording={audioRecorder.resumeRecording}
+                  onClearRecording={audioRecorder.clearRecording}
+                  onSubmitRecording={handleSubmitAudioAnswer}
+                  disabled={showEvaluation || submitting || uploadingAudio}
+                  error={audioRecorder.error}
+                />
+              </div>
+            )}
+
+            {/* Video Recorder */}
+            {responseMode === 'video' && !currentQ.answer && (
+              <div className="mt-4">
+                <VideoRecorder
+                  isRecording={videoRecorder.isRecording}
+                  isPaused={videoRecorder.isPaused}
+                  recordingTime={videoRecorder.recordingTime}
+                  videoUrl={videoRecorder.videoUrl}
+                  previewStream={videoRecorder.previewStream}
+                  onStartRecording={videoRecorder.startRecording}
+                  onStopRecording={videoRecorder.stopRecording}
+                  onPauseRecording={videoRecorder.pauseRecording}
+                  onResumeRecording={videoRecorder.resumeRecording}
+                  onClearRecording={videoRecorder.clearRecording}
+                  onSubmitRecording={handleSubmitVideoAnswer}
+                  disabled={showEvaluation || submitting || uploadingVideo}
+                  error={videoRecorder.error}
+                />
+              </div>
+            )}
 
             {/* Evaluation Feedback */}
             {showEvaluation && evaluation && (
@@ -360,15 +667,24 @@ function InterviewSessionPage() {
             )}
 
             {/* Submit Button */}
-            {!showEvaluation && !currentQ.answer && (
+            {!showEvaluation && !currentQ.answer && responseMode === 'text' && (
               <div className="mt-4">
                 <button
                   onClick={handleSubmitAnswer}
-                  disabled={submitting || !currentAnswer.trim()}
+                  disabled={submitting || uploadingAudio || uploadingVideo || !currentAnswer.trim()}
                   className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
-                  {submitting ? 'Evaluating...' : 'Submit Answer & Get AI Feedback'}
+                  {submitting ? 'Evaluating...' : 
+                   uploadingAudio ? 'Uploading Audio...' : 
+                   uploadingVideo ? 'Uploading Video...' :
+                   'Submit Answer & Get AI Feedback'}
                 </button>
+
+                {(uploadingAudio || uploadingVideo) && (
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Processing your {uploadingAudio ? 'audio' : 'video'} response...
+                  </p>
+                )}
               </div>
             )}
 

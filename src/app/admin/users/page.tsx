@@ -38,7 +38,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'user' | 'admin';
+  role: 'candidate' | 'interviewer' | 'admin';
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
@@ -56,7 +56,7 @@ export default function AdminUsersPage() {
     firstName: '',
     lastName: '',
     email: '',
-    role: 'user' as 'user' | 'admin',
+    role: 'candidate' as 'candidate' | 'interviewer' | 'admin',
     isActive: true,
   });
 
@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
         firstName: '',
         lastName: '',
         email: '',
-        role: 'user',
+        role: 'candidate',
         isActive: true,
       });
     }
@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
       firstName: '',
       lastName: '',
       email: '',
-      role: 'user',
+      role: 'candidate',
       isActive: true,
     });
   };
@@ -233,7 +233,8 @@ export default function AdminUsersPage() {
             onChange={(e) => setRoleFilter(e.target.value)}
           >
             <MenuItem value="">All Roles</MenuItem>
-            <MenuItem value="user">User</MenuItem>
+            <MenuItem value="candidate">Candidate</MenuItem>
+            <MenuItem value="interviewer">Interviewer</MenuItem>
             <MenuItem value="admin">Admin</MenuItem>
           </Select>
         </FormControl>
@@ -263,10 +264,16 @@ export default function AdminUsersPage() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Chip
-                    label={user.role}
+                    label={user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     size="small"
-                    color={user.role === 'admin' ? 'error' : 'default'}
-                    variant={user.role === 'admin' ? 'filled' : 'outlined'}
+                    color={
+                      user.role === 'admin' ? 'error' :
+                      user.role === 'interviewer' ? 'warning' :
+                      'default'
+                    }
+                    variant={
+                      user.role === 'admin' || user.role === 'interviewer' ? 'filled' : 'outlined'
+                    }
                   />
                 </TableCell>
                 <TableCell>
@@ -345,9 +352,10 @@ export default function AdminUsersPage() {
             <Select
               value={formData.role}
               label="Role"
-              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'candidate' | 'interviewer' | 'admin' }))}
             >
-              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="candidate">Candidate</MenuItem>
+              <MenuItem value="interviewer">Interviewer</MenuItem>
               <MenuItem value="admin">Admin</MenuItem>
             </Select>
           </FormControl>

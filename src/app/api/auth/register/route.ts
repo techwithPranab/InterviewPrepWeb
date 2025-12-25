@@ -7,11 +7,19 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
     
-    const { firstName, lastName, email, password } = await request.json();
+    const { firstName, lastName, email, password, role } = await request.json();
 
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
         { message: 'Please provide all required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate role
+    if (role && !['candidate', 'interviewer'].includes(role)) {
+      return NextResponse.json(
+        { message: 'Invalid role. Must be candidate or interviewer' },
         { status: 400 }
       );
     }
@@ -32,6 +40,7 @@ export async function POST(request: NextRequest) {
       lastName,
       email,
       password,
+      role: role || 'candidate', // Default to candidate if no role provided
       profile: {
         experience: 'fresher',
         skills: []

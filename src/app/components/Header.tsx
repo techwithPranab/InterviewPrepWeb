@@ -6,19 +6,58 @@ import Link from 'next/link';
 export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check for token in localStorage
+  // Initialize auth state on mount
+  const updateAuthState = () => {
     if (typeof window !== 'undefined') {
-      setIsAuthenticated(!!localStorage.getItem('token'));
-      const user = localStorage.getItem('user');
-      if (user) {
-        const userData = JSON.parse(user);
-        setIsAdmin(userData.role === 'admin');
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      
+      if (token && userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          setIsAdmin(parsedUser.role === 'admin');
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          setIsAuthenticated(false);
+          setUser(null);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+        setIsAdmin(false);
       }
     }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    updateAuthState();
+
+    // Listen for storage changes (from other tabs)
+    const handleStorageChange = () => {
+      updateAuthState();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event listener for auth updates from same tab
+    const handleAuthChange = () => {
+      updateAuthState();
+    };
+    window.addEventListener('authChange', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChange', handleAuthChange);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -26,12 +65,28 @@ export default function Header() {
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setIsAdmin(false);
+    setUser(null);
     setIsMobileMenuOpen(false);
+    // Dispatch auth change event
+    window.dispatchEvent(new Event('authChange'));
     router.push('/login');
   };
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const getDashboardLink = () => {
+    if (!user) return '/dashboard';
+    switch (user.role) {
+      case 'interviewer':
+        return '/interviewer-dashboard';
+      case 'admin':
+        return '/admin';
+      case 'candidate':
+      default:
+        return '/dashboard';
+    }
   };
 
   return (
@@ -49,15 +104,20 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-4 lg:space-x-6">
+          <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center">
             <Link href="/interview-guides" className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors">
               Interview Guides
             </Link>
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard" className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors">Dashboard</Link>
+                {/* Simple Dashboard Link */}
+                <Link 
+                  href={getDashboardLink()}
+                  className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                >
+                  Dashboard
+                </Link>
                 <Link href="/profile" className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors">Profile</Link>
-                <Link href="/interview/new" className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors">New Interview</Link>
                 {isAdmin && (
                   <Link href="/admin/interview-guides" className="text-sm lg:text-base text-blue-600 hover:text-blue-800 font-medium transition-colors">
                     Admin
@@ -73,7 +133,12 @@ export default function Header() {
             ) : (
               <>
                 <Link href="/login" className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors">Login</Link>
-                <Link href="/register" className="text-sm lg:text-base text-gray-700 hover:text-blue-600 font-medium transition-colors">Register</Link>
+                <Link 
+                  href="/register" 
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium shadow-sm text-sm lg:text-base"
+                >
+                  Register
+                </Link>
               </>
             )}
           </nav>
@@ -99,7 +164,7 @@ export default function Header() {
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <nav className="md:hidden py-4 border-t border-gray-200">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-1">
               <Link 
                 href="/interview-guides" 
                 className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors"
@@ -109,27 +174,28 @@ export default function Header() {
               </Link>
               {isAuthenticated ? (
                 <>
+                  {/* Simple Dashboard Link */}
                   <Link 
-                    href="/dashboard" 
-                    className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors"
+                    href={getDashboardLink()}
+                    className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors block"
                     onClick={closeMobileMenu}
                   >
                     Dashboard
                   </Link>
-                  <Link 
-                    href="/profile" 
-                    className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors"
-                    onClick={closeMobileMenu}
-                  >
-                    Profile
-                  </Link>
-                  <Link 
-                    href="/interview/new" 
-                    className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors"
-                    onClick={closeMobileMenu}
-                  >
-                    New Interview
-                  </Link>
+                  
+                  <div className="border-t border-gray-200 pt-2 mt-2">
+                    <Link 
+                      href="/profile" 
+                      className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors flex items-center gap-2"
+                      onClick={closeMobileMenu}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Profile
+                    </Link>
+                  </div>
+
                   {isAdmin && (
                     <Link 
                       href="/admin/interview-guides" 
@@ -141,7 +207,7 @@ export default function Header() {
                   )}
                   <button
                     onClick={handleLogout}
-                    className="text-sm text-left text-gray-700 hover:text-red-600 font-medium py-2 px-2 hover:bg-red-50 rounded bg-transparent border-none cursor-pointer transition-colors"
+                    className="text-sm text-left text-red-600 hover:text-red-700 font-medium py-2 px-2 hover:bg-red-50 rounded bg-transparent border-none cursor-pointer transition-colors w-full"
                   >
                     Logout
                   </button>
@@ -157,7 +223,7 @@ export default function Header() {
                   </Link>
                   <Link 
                     href="/register" 
-                    className="text-sm text-gray-700 hover:text-blue-600 font-medium py-2 px-2 hover:bg-gray-50 rounded transition-colors"
+                    className="text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 font-medium py-2.5 px-3 hover:from-blue-700 hover:to-purple-700 rounded-lg transition-all flex items-center justify-center shadow-sm"
                     onClick={closeMobileMenu}
                   >
                     Register
