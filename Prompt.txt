@@ -1,7 +1,4 @@
 You are senior software developer in Nodejs and ReactJS,I want to implement following task
-1) I want to seperate the frontend and backebd logic in two different prject as backend and frontend
-2) Backend would have all the api, services, lib, model routes etc. which will be based on node js
-3) The frontend project will have all the UI component and client details to connect with backend api etc
-4) I want to keep the UI look and feel and flows AS IT is
-
-Create to do list and start implement the task
+1) After Admin Login , its not routing to Dashboard page.
+2) After interviewer, login. Dashboard page is not showing any data, also clicking on Dashboard lisk from sidemenu routng to dashboard page
+3) Candidate Dashboard or other menu page center section is not showing priperly, lots of white spaces in begining

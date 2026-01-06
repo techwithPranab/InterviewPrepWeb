@@ -39,11 +39,18 @@ export default function InterviewerDashboardPage() {
     // Try to get user from Local Storage first
     const storedUser = localStorage.getItem('user');
     console.log('Stored user data:', storedUser);
-    if (storedUser) {
+
+    if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
       try {
         const userData = JSON.parse(storedUser);
         setUser(userData);
         console.log('Parsed user data:', userData);
+
+        // Validate that userData has required properties
+        if (!userData || typeof userData !== 'object' || !userData.role) {
+          throw new Error('Invalid user data structure');
+        }
+
         // Redirect if not interviewer
         if (userData.role !== 'interviewer') {
           if (userData.role === 'candidate') {
@@ -64,7 +71,7 @@ export default function InterviewerDashboardPage() {
         return;
       }
     } else {
-      // No user data stored, redirect to login
+      // No valid user data stored, redirect to login
       router.push('/login');
       return;
     }
@@ -85,8 +92,8 @@ export default function InterviewerDashboardPage() {
         try {
           const statsResponse = await api.get('/interviewers/stats');
           console.log('Stats response:', statsResponse);
-          if (statsResponse.success) {
-            setStats(statsResponse.data?.stats);
+          if (statsResponse.success && (statsResponse as any).stats) {
+            setStats((statsResponse as any).stats);
           } else {
             console.error('Failed to fetch stats:', statsResponse.message);
             // Fallback to default stats

@@ -22,17 +22,34 @@ export default function CandidateDashboardLayout({ children }: CandidateDashboar
     }
 
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      // Redirect non-candidates to appropriate dashboard
-      const userData = JSON.parse(storedUser);
-      if (userData.role !== 'candidate') {
-        if (userData.role === 'interviewer') {
-          router.push('/interviewer-dashboard');
-        } else if (userData.role === 'admin') {
-          router.push('/admin');
+    if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+
+        // Validate that userData has required properties
+        if (!userData || typeof userData !== 'object' || !userData.role) {
+          throw new Error('Invalid user data structure');
         }
+
+        // Redirect non-candidates to appropriate dashboard
+        if (userData.role !== 'candidate') {
+          if (userData.role === 'interviewer') {
+            router.push('/interviewer-dashboard');
+          } else if (userData.role === 'admin') {
+            router.push('/admin');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
+        router.push('/login');
       }
+    } else {
+      // No valid user data stored, redirect to login
+      router.push('/login');
     }
   }, [router]);
 
@@ -218,31 +235,33 @@ export default function CandidateDashboardLayout({ children }: CandidateDashboar
             </button>
           </div>
         </div>
-
-        {/* Mobile header bar */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">C</span>
-            </div>
-            <span className="text-lg font-bold text-gray-900">Candidate Dashboard</span>
-          </Link>
-          <div className="w-10" /> {/* Spacer for centering */}
-        </div>
-
-        {/* Page Content */}
-        <main className="min-h-screen lg:ml-64">
-          {children}
-        </main>
       </div>
+
+      {/* Mobile header bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="p-2 rounded-lg hover:bg-gray-100"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">C</span>
+          </div>
+          <span className="text-lg font-bold text-gray-900">Candidate Dashboard</span>
+        </Link>
+        <div className="w-10" /> {/* Spacer for centering */}
+      </div>
+
+      {/* Page Content */}
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+        <div className="p-4 lg:p-6">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

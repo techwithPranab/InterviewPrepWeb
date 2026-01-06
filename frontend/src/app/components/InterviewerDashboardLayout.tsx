@@ -22,17 +22,34 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
     }
 
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      // Redirect non-interviewers to appropriate dashboard
-      const userData = JSON.parse(storedUser);
-      if (userData.role !== 'interviewer') {
-        if (userData.role === 'candidate') {
-          router.push('/dashboard');
-        } else if (userData.role === 'admin') {
-          router.push('/admin');
+    if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+
+        // Validate user data structure
+        if (!userData || typeof userData !== 'object' || !userData.role) {
+          throw new Error('Invalid user data structure');
         }
+
+        // Redirect non-interviewers to appropriate dashboard
+        if (userData.role !== 'interviewer') {
+          if (userData.role === 'candidate') {
+            router.push('/dashboard');
+          } else if (userData.role === 'admin') {
+            router.push('/admin');
+          } else {
+            router.push('/login');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        router.push('/login');
       }
+    } else {
+      router.push('/login');
     }
   }, [router]);
 
@@ -230,32 +247,31 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
         </div>
       </div>
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col lg:ml-0 w-full">
-        {/* Mobile header bar */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <Link href="/interviewer-dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">I</span>
-            </div>
-            <span className="text-lg font-bold text-gray-900">Interviewer Dashboard</span>
-          </Link>
-          <div className="w-10" /> {/* Spacer for centering */}
-        </div>
-
-        {/* Page Content */}
-        <main className="flex-1 pt-16 lg:pt-0 p-4 lg:p-8 overflow-y-auto">
-          {children}
-        </main>
+      {/* Mobile header bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="p-2 rounded-lg hover:bg-gray-100"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <Link href="/interviewer-dashboard" className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">I</span>
+          </div>
+          <span className="text-lg font-bold text-gray-900">Interviewer Dashboard</span>
+        </Link>
+        <div className="w-10" /> {/* Spacer for centering */}
       </div>
+
+      {/* Page Content */}
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+        <div className="p-4 lg:p-6">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

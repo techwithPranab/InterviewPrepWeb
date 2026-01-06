@@ -53,7 +53,7 @@ export default function NewInterviewPage() {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get('/user/profile');
+      const response = await api.getCurrentUser();
 
       if (response.success) {
         setUser(response.data?.user);

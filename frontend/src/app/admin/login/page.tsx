@@ -57,10 +57,11 @@ export default function AdminLoginPage() {
           if (response.data.token) {
             api.setToken(response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('token', response.data.token);
           }
 
-          // Redirect to admin dashboard
-          router.push('/admin');
+          // Force a page reload to ensure proper state initialization
+          window.location.href = '/admin';
         } else {
           setError('Access denied. Admin privileges required.');
         }
@@ -129,6 +130,18 @@ export default function AdminLoginPage() {
               {error}
             </Alert>
           )}
+
+          <Alert severity="info" sx={{ width: '100%', mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+              Demo Admin Credentials
+            </Typography>
+            <Typography variant="body2">
+              Email: admin@mockinterview.com
+            </Typography>
+            <Typography variant="body2">
+              Password: Admin@123
+            </Typography>
+          </Alert>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
             <TextField

@@ -56,14 +56,18 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
   const [user, setUser] = useState<any>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     // Don't run auth checks on the login page
-    if (pathname !== '/admin/login') {
-      checkAuth();
+    if (pathname === '/admin/login') {
+      setIsLoading(false);
+      return;
     }
+    
+    checkAuth();
   }, [pathname]);
 
   const checkAuth = () => {
@@ -71,18 +75,29 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('user');
 
-      if (token && userData) {
-        const parsedUser = JSON.parse(userData);
-        if (parsedUser.role === 'admin') {
-          setIsAuthenticated(true);
-          setIsAdmin(true);
-          setUser(parsedUser);
-        } else {
-          // Not an admin, redirect to main login
-          router.push('/login');
+      if (token && userData && userData !== 'null' && userData !== 'undefined') {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser && parsedUser.role === 'admin') {
+            setIsAuthenticated(true);
+            setIsAdmin(true);
+            setUser(parsedUser);
+            setIsLoading(false);
+          } else {
+            // Not an admin, redirect to main login
+            setIsLoading(false);
+            router.push('/login');
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          setIsLoading(false);
+          router.push('/admin/login');
         }
       } else {
         // Not authenticated, redirect to admin login
+        setIsLoading(false);
         router.push('/admin/login');
       }
     }
@@ -188,12 +203,24 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
     return <>{children}</>;
   }
 
-  if (!isAuthenticated || !isAdmin) {
+  // Show loading state while checking authentication
+  if (isLoading) {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
           <Typography>Loading...</Typography>
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+          <Typography>Redirecting...</Typography>
         </Box>
       </ThemeProvider>
     );

@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get('/user/profile');
+      const response = await api.getCurrentUser();
 
       if (response.success && response.data) {
         setUser(response.data.user);
