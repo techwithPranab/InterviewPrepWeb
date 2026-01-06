@@ -27,6 +27,7 @@ import {
   LibraryBooks as GuidesIcon,
   Settings as SettingsIcon,
   People as UsersIcon,
+  PersonSearch as IntervieweesIcon,
   Category as SkillsIcon,
   Assessment as AnalyticsIcon,
   Logout as LogoutIcon,
@@ -167,6 +168,11 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
       text: 'User Management',
       icon: <UsersIcon />,
       path: '/admin/users',
+    },
+    {
+      text: 'Interviewees',
+      icon: <IntervieweesIcon />,
+      path: '/admin/interviewees',
     },
     {
       text: 'Analytics',

@@ -3,6 +3,7 @@ import User from '../models/User';
 import InterviewSession from '../models/InterviewSession';
 import Skill from '../models/Skill';
 import InterviewGuide from '../models/InterviewGuide';
+import SystemSettings from '../models/SystemSettings';
 import { authenticate, authorize } from '../middleware/auth';
 import { validatePagination } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
@@ -825,6 +826,361 @@ router.get(
         questionGrowth: Math.round(questionGrowth * 100) / 100,
         activeUsersGrowth: Math.round(activeUsersGrowth * 100) / 100,
         monthlyStats
+      }
+    });
+  })
+);
+
+/**
+ * GET /api/admin/interviewees
+ * Get all interviewees (candidates) with their interview history and performance data
+ */
+router.get(
+  '/interviewees',
+  authenticate,
+  authorize('admin'),
+  validatePagination,
+  asyncHandler(async (req: Request, res: Response) => {
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search as string;
+    const skill = req.query.skill as string;
+    const status = req.query.status as string;
+    const experience = req.query.experience as string;
+
+    // Build filter for candidates only
+    const filter: any = { role: 'candidate' };
+
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (skill) {
+      filter['profile.skills'] = { $in: [skill] };
+    }
+
+    if (status && status !== 'all') {
+      filter.isActive = status === 'active';
+    }
+
+    if (experience && experience !== 'all') {
+      filter['profile.experience'] = experience;
+    }
+
+    const candidates = await User.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments(filter);
+
+    // For each candidate, get their interview sessions and calculate performance stats
+    const interviewees = await Promise.all(candidates.map(async (candidate) => {
+      const sessions = await InterviewSession.find({ candidate: candidate._id })
+        .sort({ completedAt: -1 });
+
+      // Calculate performance stats
+      const completedSessions = sessions.filter(session => 
+        session.status === 'completed' && session.overallEvaluation
+      );
+
+      const totalInterviews = sessions.length;
+      const completedInterviews = completedSessions.length;
+      
+      // Calculate average score from completed sessions with evaluations
+      let averageScore = 0;
+      let improvementTrend = 'stable';
+
+      if (completedSessions.length > 0) {
+        const scores = completedSessions.map(session => 
+          session.overallEvaluation?.averageScore || session.overallEvaluation?.totalScore || 0
+        );
+        averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+
+        // Calculate improvement trend (compare last 2 sessions)
+        if (scores.length >= 2) {
+          const recentScore = scores[0];
+          const previousScore = scores[1];
+          if (recentScore > previousScore) {
+            improvementTrend = 'up';
+          } else if (recentScore < previousScore) {
+            improvementTrend = 'down';
+          }
+        }
+      }
+
+      const lastInterviewDate = completedSessions.length > 0 
+        ? completedSessions[0].completedAt 
+        : undefined;
+
+      return {
+        profile: candidate.toObject(),
+        sessions: sessions.map(session => ({
+          _id: session._id,
+          title: session.title,
+          type: session.type,
+          difficulty: session.difficulty,
+          skills: session.skills,
+          status: session.status,
+          completedAt: session.completedAt,
+          overallEvaluation: session.overallEvaluation
+        })),
+        stats: {
+          totalInterviews,
+          averageScore: Math.round(averageScore),
+          completedInterviews,
+          lastInterviewDate,
+          improvementTrend
+        }
+      };
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        interviewees,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  })
+);
+
+/**
+ * GET /api/admin/interviewees/:id
+ * Get detailed information about a specific interviewee
+ */
+router.get(
+  '/interviewees/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const candidate = await User.findById(req.params.id).select('-password');
+
+    if (!candidate || candidate.role !== 'candidate') {
+      return res.status(404).json({
+        success: false,
+        message: 'Interviewee not found'
+      });
+    }
+
+    // Get all interview sessions for this candidate
+    const sessions = await InterviewSession.find({ candidate: candidate._id })
+      .populate('interviewer', 'firstName lastName email')
+      .sort({ createdAt: -1 });
+
+    // Calculate detailed performance analytics
+    const completedSessions = sessions.filter(session => 
+      session.status === 'completed' && session.overallEvaluation
+    );
+
+    let performanceAnalytics = {
+      skillPerformance: {} as { [key: string]: number },
+      difficultyPerformance: {} as { [key: string]: number },
+      timeBasedTrends: [] as Array<{ month: string; averageScore: number; sessionCount: number }>,
+      criteriaBreakdown: {
+        technical_accuracy: 0,
+        communication: 0,
+        problem_solving: 0,
+        confidence: 0
+      },
+      strengths: [] as string[],
+      areasForImprovement: [] as string[]
+    };
+
+    if (completedSessions.length > 0) {
+      // Skill-wise performance
+      const skillScores: { [key: string]: number[] } = {};
+      completedSessions.forEach(session => {
+        session.skills.forEach(skill => {
+          if (!skillScores[skill]) skillScores[skill] = [];
+          skillScores[skill].push(session.overallEvaluation?.averageScore || session.overallEvaluation?.totalScore || 0);
+        });
+      });
+
+      Object.keys(skillScores).forEach(skill => {
+        performanceAnalytics.skillPerformance[skill] = 
+          skillScores[skill].reduce((sum, score) => sum + score, 0) / skillScores[skill].length;
+      });
+
+      // Difficulty-wise performance
+      const difficultyScores: { [key: string]: number[] } = {};
+      completedSessions.forEach(session => {
+        const difficulty = session.difficulty;
+        if (!difficultyScores[difficulty]) difficultyScores[difficulty] = [];
+        difficultyScores[difficulty].push(session.overallEvaluation?.averageScore || session.overallEvaluation?.totalScore || 0);
+      });
+
+      Object.keys(difficultyScores).forEach(difficulty => {
+        performanceAnalytics.difficultyPerformance[difficulty] = 
+          difficultyScores[difficulty].reduce((sum, score) => sum + score, 0) / difficultyScores[difficulty].length;
+      });
+
+      // Average criteria breakdown - simplified approach
+      const totalSessions = completedSessions.length;
+      let techSum = 0, commSum = 0, probSum = 0, confSum = 0;
+
+      completedSessions.forEach(session => {
+        // Use overall score for all criteria if detailed breakdown not available
+        const score = session.overallEvaluation?.averageScore || session.overallEvaluation?.totalScore || 0;
+        techSum += score;
+        commSum += score;
+        probSum += score;
+        confSum += score;
+      });
+
+      performanceAnalytics.criteriaBreakdown = {
+        technical_accuracy: techSum / totalSessions,
+        communication: commSum / totalSessions,
+        problem_solving: probSum / totalSessions,
+        confidence: confSum / totalSessions
+      };
+
+      // Collect strengths and areas for improvement
+      const strengthsSet = new Set<string>();
+      const improvementsSet = new Set<string>();
+
+      completedSessions.forEach(session => {
+        if (session.overallEvaluation?.strengths) {
+          session.overallEvaluation.strengths.forEach(strength => strengthsSet.add(strength));
+        }
+        if (session.overallEvaluation?.improvements) {
+          session.overallEvaluation.improvements.forEach(improvement => improvementsSet.add(improvement));
+        }
+      });
+
+      performanceAnalytics.strengths = Array.from(strengthsSet);
+      performanceAnalytics.areasForImprovement = Array.from(improvementsSet);
+
+      // Time-based performance trends (last 6 months)
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        
+        const monthSessions = completedSessions.filter(session => 
+          session.completedAt && session.completedAt >= monthStart && session.completedAt < monthEnd
+        );
+
+        if (monthSessions.length > 0) {
+          const monthAverage = monthSessions.reduce((sum, session) => 
+            sum + (session.overallEvaluation?.averageScore || session.overallEvaluation?.totalScore || 0), 0
+          ) / monthSessions.length;
+
+          performanceAnalytics.timeBasedTrends.push({
+            month: monthStart.toISOString().substr(0, 7), // YYYY-MM format
+            averageScore: Math.round(monthAverage),
+            sessionCount: monthSessions.length
+          });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        profile: candidate.toObject(),
+        sessions: sessions.map(session => ({
+          _id: session._id,
+          title: session.title,
+          type: session.type,
+          difficulty: session.difficulty,
+          skills: session.skills,
+          status: session.status,
+          createdAt: session.createdAt,
+          startedAt: session.startedAt,
+          completedAt: session.completedAt,
+          duration: session.duration,
+          interviewer: session.interviewer,
+          overallEvaluation: session.overallEvaluation
+        })),
+        performanceAnalytics
+      }
+    });
+  })
+);
+
+/**
+ * GET /api/admin/settings
+ * Get system settings (admin)
+ */
+router.get(
+  '/settings',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    let settings = await SystemSettings.findOne();
+
+    // Create default settings if none exist
+    if (!settings) {
+      settings = new SystemSettings();
+      await settings.save();
+    }
+
+    res.json({
+      success: true,
+      data: {
+        settings
+      }
+    });
+  })
+);
+
+/**
+ * PUT /api/admin/settings
+ * Update system settings (admin)
+ */
+router.put(
+  '/settings',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const {
+      siteName,
+      siteDescription,
+      contactEmail,
+      enableRegistration,
+      enableEmailNotifications,
+      maxSessionsPerUser,
+      sessionTimeoutMinutes,
+      enableAnalytics,
+      maintenanceMode
+    } = req.body;
+
+    let settings = await SystemSettings.findOne();
+
+    if (!settings) {
+      settings = new SystemSettings();
+    }
+
+    // Update fields
+    if (siteName !== undefined) settings.siteName = siteName;
+    if (siteDescription !== undefined) settings.siteDescription = siteDescription;
+    if (contactEmail !== undefined) settings.contactEmail = contactEmail;
+    if (enableRegistration !== undefined) settings.enableRegistration = enableRegistration;
+    if (enableEmailNotifications !== undefined) settings.enableEmailNotifications = enableEmailNotifications;
+    if (maxSessionsPerUser !== undefined) settings.maxSessionsPerUser = maxSessionsPerUser;
+    if (sessionTimeoutMinutes !== undefined) settings.sessionTimeoutMinutes = sessionTimeoutMinutes;
+    if (enableAnalytics !== undefined) settings.enableAnalytics = enableAnalytics;
+    if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
+
+    await settings.save();
+
+    res.json({
+      success: true,
+      message: 'Settings updated successfully',
+      data: {
+        settings
       }
     });
   })
