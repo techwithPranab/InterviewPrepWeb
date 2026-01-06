@@ -6,10 +6,10 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 let User, Skill, InterviewGuide, QuestionBank;
 
 async function loadModels() {
-  User = (await import('../lib/models/User.ts')).default;
-  Skill = (await import('../lib/models/Skill.ts')).default;
-  InterviewGuide = (await import('../lib/models/InterviewGuide.ts')).default;
-  QuestionBank = (await import('../lib/models/QuestionBank.js')).default;
+  User = (await import('./backend/src/models/User.ts')).default;
+  Skill = (await import('./backend/src/models/Skill.ts')).default;
+  InterviewGuide = (await import('./backend/src/models/InterviewGuide.ts')).default;
+  QuestionBank = (await import('./backend/src/models/QuestionBank.ts')).default;
 }
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mockinterview';

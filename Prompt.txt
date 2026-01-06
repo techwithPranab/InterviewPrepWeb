@@ -1,6 +1,7 @@
 You are senior software developer in Nodejs and ReactJS,I want to implement following task
-1) After interviwer login, header menu as not refreshing , login and signup is still showing
-2) The left menu links are shoiwing 404 error
-3) Layout is not showing properly i,e center section page is not showing properly
-4) In Admin Role, New USer screen the new roles are not refelcting
-5) No pages for list of Interview taken or scheduled or any metrices related to Interview
+1) I want to seperate the frontend and backebd logic in two different prject as backend and frontend
+2) Backend would have all the api, services, lib, model routes etc. which will be based on node js
+3) The frontend project will have all the UI component and client details to connect with backend api etc
+4) I want to keep the UI look and feel and flows AS IT is
+
+Create to do list and start implement the task
