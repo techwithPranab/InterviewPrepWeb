@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import User from '../models/User';
 import InterviewSession from '../models/InterviewSession';
 import Skill from '../models/Skill';
+import InterviewGuide from '../models/InterviewGuide';
 import { authenticate, authorize } from '../middleware/auth';
 import { validatePagination } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
@@ -193,6 +194,154 @@ router.get(
 );
 
 /**
+ * POST /api/admin/users
+ * Create new user (admin only)
+ */
+router.post(
+  '/users',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { firstName, lastName, email, role, isActive } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name, last name, and email are required'
+      });
+    }
+
+    // Validate role
+    if (!['candidate', 'interviewer', 'admin'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be candidate, interviewer, or admin'
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists'
+      });
+    }
+
+    // Generate a temporary password (user should change it on first login)
+    const tempPassword = Math.random().toString(36).slice(-8) + 'Temp123!';
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: tempPassword, // Will be hashed by pre-save middleware
+      role,
+      isActive: isActive !== undefined ? isActive : true
+    });
+
+    await user.save();
+
+    // Return user without password
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      user: userResponse,
+      tempPassword // Admin should communicate this to the user
+    });
+  })
+);
+
+/**
+ * PUT /api/admin/users/:id
+ * Update user (admin only)
+ */
+router.put(
+  '/users/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { firstName, lastName, email, role, isActive } = req.body;
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Validate role if provided
+    if (role && !['candidate', 'interviewer', 'admin'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be candidate, interviewer, or admin'
+      });
+    }
+
+    // Check email uniqueness if email is being changed
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User with this email already exists'
+        });
+      }
+    }
+
+    // Update fields
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (email) user.email = email;
+    if (role) user.role = role;
+    if (isActive !== undefined) user.isActive = isActive;
+
+    await user.save();
+
+    // Return user without password
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({
+      success: true,
+      message: 'User updated successfully',
+      user: userResponse
+    });
+  })
+);
+
+/**
+ * DELETE /api/admin/users/:id
+ * Delete user (admin only)
+ */
+router.delete(
+  '/users/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  })
+);
+
+/**
  * GET /api/admin/reports/user-activity
  * Get user activity report
  */
@@ -245,6 +394,438 @@ router.get(
       success: true,
       logs: [],
       message: 'System logs endpoint - implement with logging service'
+    });
+  })
+);
+
+/**
+ * GET /api/admin/interview-guides
+ * Get all interview guides (admin can see unpublished too)
+ */
+router.get(
+  '/interview-guides',
+  authenticate,
+  authorize('admin'),
+  validatePagination,
+  asyncHandler(async (req: Request, res: Response) => {
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const skip = (page - 1) * limit;
+    const domain = req.query.domain as string;
+    const technology = req.query.technology as string;
+    const difficulty = req.query.difficulty as string;
+    const isPublished = req.query.isPublished as string;
+
+    // Build filter - admin can see all guides
+    const filter: any = {};
+
+    if (domain) filter.domain = domain;
+    if (technology) filter.technology = technology;
+    if (difficulty) filter.difficulty = difficulty;
+    if (isPublished !== undefined && isPublished !== '') {
+      filter.isPublished = isPublished === 'true';
+    }
+
+    const guides = await InterviewGuide.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .populate('createdBy', 'firstName lastName email');
+
+    const total = await InterviewGuide.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: {
+        guides,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  })
+);
+
+/**
+ * GET /api/admin/interview-guides/stats
+ * Get interview guides statistics
+ */
+router.get(
+  '/interview-guides/stats',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const total = await InterviewGuide.countDocuments();
+    const published = await InterviewGuide.countDocuments({ isPublished: true });
+    const draft = await InterviewGuide.countDocuments({ isPublished: false });
+    
+    // Get total views across all guides
+    const viewsResult = await InterviewGuide.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalViews: { $sum: '$views' }
+        }
+      }
+    ]);
+    const totalViews = viewsResult.length > 0 ? viewsResult[0].totalViews : 0;
+
+    res.json({
+      success: true,
+      data: {
+        total,
+        published,
+        draft,
+        totalViews
+      }
+    });
+  })
+);
+
+/**
+ * GET /api/admin/interview-guides/:id
+ * Get single interview guide details (admin)
+ */
+router.get(
+  '/interview-guides/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const guide = await InterviewGuide.findById(req.params.id)
+      .populate('createdBy', 'firstName lastName email');
+
+    if (!guide) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview guide not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: guide
+    });
+  })
+);
+
+/**
+ * PUT /api/admin/interview-guides/:id
+ * Update interview guide (admin)
+ */
+router.put(
+  '/interview-guides/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { title, description, domain, technology, difficulty, questions, tags, isPublished } = req.body;
+
+    const guide = await InterviewGuide.findById(req.params.id);
+
+    if (!guide) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview guide not found'
+      });
+    }
+
+    // Update fields
+    if (title !== undefined) guide.title = title;
+    if (description !== undefined) guide.description = description;
+    if (domain !== undefined) guide.domain = domain;
+    if (technology !== undefined) guide.technology = technology;
+    if (difficulty !== undefined) guide.difficulty = difficulty;
+    if (questions !== undefined) guide.questions = questions;
+    if (tags !== undefined) guide.tags = tags;
+    if (isPublished !== undefined) guide.isPublished = isPublished;
+
+    await guide.save();
+
+    res.json({
+      success: true,
+      message: 'Interview guide updated successfully',
+      data: guide
+    });
+  })
+);
+
+/**
+ * DELETE /api/admin/interview-guides/:id
+ * Delete interview guide
+ */
+router.delete(
+  '/interview-guides/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const guide = await InterviewGuide.findByIdAndDelete(req.params.id);
+
+    if (!guide) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview guide not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Interview guide deleted successfully'
+    });
+  })
+);
+
+/**
+ * GET /api/admin/skills
+ * Get all skills (admin view with full details)
+ */
+router.get(
+  '/skills',
+  authenticate,
+  authorize('admin'),
+  validatePagination,
+  asyncHandler(async (req: Request, res: Response) => {
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const skip = (page - 1) * limit;
+    const category = req.query.category as string;
+    const search = req.query.search as string;
+
+    // Build filter
+    const filter: any = {};
+    if (category) filter.category = category;
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    const skills = await Skill.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ name: 1 });
+
+    const total = await Skill.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: {
+        skills,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  })
+);
+
+/**
+ * POST /api/admin/skills
+ * Create new skill
+ */
+router.post(
+  '/skills',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { name, category, description, isActive } = req.body;
+
+    // Check if skill already exists
+    const existingSkill = await Skill.findOne({ name });
+    if (existingSkill) {
+      return res.status(400).json({
+        success: false,
+        message: 'Skill already exists'
+      });
+    }
+
+    const skill = new Skill({
+      name,
+      category,
+      description,
+      isActive: isActive !== undefined ? isActive : true
+    });
+
+    await skill.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Skill created successfully',
+      skill
+    });
+  })
+);
+
+/**
+ * PUT /api/admin/skills/:id
+ * Update skill
+ */
+router.put(
+  '/skills/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { name, category, description, isActive } = req.body;
+
+    const skill = await Skill.findById(req.params.id);
+
+    if (!skill) {
+      return res.status(404).json({
+        success: false,
+        message: 'Skill not found'
+      });
+    }
+
+    // Update fields
+    if (name) skill.name = name;
+    if (category) skill.category = category;
+    if (description !== undefined) skill.description = description;
+    if (isActive !== undefined) skill.isActive = isActive;
+
+    await skill.save();
+
+    res.json({
+      success: true,
+      message: 'Skill updated successfully',
+      skill
+    });
+  })
+);
+
+/**
+ * DELETE /api/admin/skills/:id
+ * Delete skill
+ */
+router.delete(
+  '/skills/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const skill = await Skill.findByIdAndDelete(req.params.id);
+
+    if (!skill) {
+      return res.status(404).json({
+        success: false,
+        message: 'Skill not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Skill deleted successfully'
+    });
+  })
+);
+
+/**
+ * GET /api/admin/analytics
+ * Get analytics data for admin dashboard
+ */
+router.get(
+  '/analytics',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    // Get current date and date from 30 days ago
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // Get total counts
+    const totalUsers = await User.countDocuments();
+    const totalSessions = await InterviewSession.countDocuments();
+    const totalQuestions = await InterviewGuide.aggregate([
+      { $group: { _id: null, total: { $sum: { $size: '$questions' } } } }
+    ]);
+    const totalQuestionsCount = totalQuestions.length > 0 ? totalQuestions[0].total : 0;
+
+    // Get active users today (users who logged in today)
+    const activeUsersToday = await User.countDocuments({
+      lastLogin: { $gte: today }
+    });
+
+    // Calculate growth percentages (comparing last 30 days to previous 30 days)
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    const usersLast30Days = await User.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+    const usersPrevious30Days = await User.countDocuments({
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    });
+    const userGrowth = usersPrevious30Days > 0 ?
+      ((usersLast30Days - usersPrevious30Days) / usersPrevious30Days * 100) : 0;
+
+    const sessionsLast30Days = await InterviewSession.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+    const sessionsPrevious30Days = await InterviewSession.countDocuments({
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    });
+    const sessionGrowth = sessionsPrevious30Days > 0 ?
+      ((sessionsLast30Days - sessionsPrevious30Days) / sessionsPrevious30Days * 100) : 0;
+
+    // For questions growth, we'll use interview guides created in last 30 days
+    const guidesLast30Days = await InterviewGuide.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+    const guidesPrevious30Days = await InterviewGuide.countDocuments({
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    });
+    const questionGrowth = guidesPrevious30Days > 0 ?
+      ((guidesLast30Days - guidesPrevious30Days) / guidesPrevious30Days * 100) : 0;
+
+    // Active users growth (simplified - using login activity)
+    const activeUsersLast30Days = await User.countDocuments({
+      lastLogin: { $gte: thirtyDaysAgo }
+    });
+    const activeUsersPrevious30Days = await User.countDocuments({
+      lastLogin: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    });
+    const activeUsersGrowth = activeUsersPrevious30Days > 0 ?
+      ((activeUsersLast30Days - activeUsersPrevious30Days) / activeUsersPrevious30Days * 100) : 0;
+
+    // Generate monthly stats for the last 6 months
+    const monthlyStats = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+
+      const monthUsers = await User.countDocuments({
+        createdAt: { $gte: monthStart, $lt: monthEnd }
+      });
+      const monthSessions = await InterviewSession.countDocuments({
+        createdAt: { $gte: monthStart, $lt: monthEnd }
+      });
+      const monthQuestions = await InterviewGuide.aggregate([
+        { $match: { createdAt: { $gte: monthStart, $lt: monthEnd } } },
+        { $group: { _id: null, total: { $sum: { $size: '$questions' } } } }
+      ]);
+      const monthQuestionsCount = monthQuestions.length > 0 ? monthQuestions[0].total : 0;
+
+      monthlyStats.push({
+        month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        users: monthUsers,
+        sessions: monthSessions,
+        questions: monthQuestionsCount
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        totalSessions,
+        totalQuestions: totalQuestionsCount,
+        activeUsersToday,
+        userGrowth: Math.round(userGrowth * 100) / 100,
+        sessionGrowth: Math.round(sessionGrowth * 100) / 100,
+        questionGrowth: Math.round(questionGrowth * 100) / 100,
+        activeUsersGrowth: Math.round(activeUsersGrowth * 100) / 100,
+        monthlyStats
+      }
     });
   })
 );

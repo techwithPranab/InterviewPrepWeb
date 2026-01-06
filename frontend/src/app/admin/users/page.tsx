@@ -68,12 +68,12 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       const response = await api.get('/admin/users');
-
+      console.log('Fetched users:', response);
       if (!response.success) {
         throw new Error(response.message || 'Failed to fetch users');
       }
 
-      setUsers(response.data?.users || []);
+      setUsers(response.data || []);
     } catch (err) {
       console.error('Failed to fetch users:', err);
       setError('Failed to load users');

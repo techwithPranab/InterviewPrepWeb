@@ -48,24 +48,31 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
+      console.log('Attempting admin login...');
       const response = await api.login(formData.email, formData.password);
+      console.log('Login response:', response);
 
-      if (response.success && response.data) {
+      if (response.success && response.user) {
         // Check if user is admin
-        if (response.data.user?.role === 'admin') {
+        if (response.user?.role === 'admin') {
+          console.log('Admin user confirmed, storing credentials...');
           // Store token and user data
-          if (response.data.token) {
-            api.setToken(response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-            localStorage.setItem('token', response.data.token);
+          if (response.token) {
+            api.setToken(response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            localStorage.setItem('token', response.token);
+            console.log('Credentials stored, redirecting to /admin...');
           }
 
           // Force a page reload to ensure proper state initialization
+          console.log('Performing hard redirect to /admin');
           window.location.href = '/admin';
         } else {
+          console.log('User role is not admin:', response.data.user?.role);
           setError('Access denied. Admin privileges required.');
         }
       } else {
+        console.log('Login failed:', response.message);
         setError(response.message || 'Login failed');
       }
     } catch (err) {

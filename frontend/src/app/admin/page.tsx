@@ -41,23 +41,18 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
 
-      // Fetch users count
-      const usersResponse = await api.get('/admin/users/count');
+      // Fetch dashboard stats from the correct endpoint
+      const response = await api.get('/admin/dashboard');
 
-      // Fetch guides stats
-      const guidesResponse = await api.get('/admin/interview-guides/stats');
-
-      if (usersResponse.success) {
-        setStats(prev => ({ ...prev, totalUsers: usersResponse.data?.count || 0 }));
-      }
-
-      if (guidesResponse.success) {
-        setStats(prev => ({
-          ...prev,
-          totalGuides: guidesResponse.data?.total || 0,
-          publishedGuides: guidesResponse.data?.published || 0,
-          totalViews: guidesResponse.data?.views || 0,
-        }));
+      if (response.success && (response as any).dashboard) {
+        const { users, interviews, skills } = (response as any).dashboard;
+        
+        setStats({
+          totalUsers: users?.total || 0,
+          totalGuides: skills?.total || 0,
+          publishedGuides: interviews?.completed || 0,
+          totalViews: interviews?.total || 0,
+        });
       }
 
     } catch (err) {

@@ -57,6 +57,7 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -64,42 +65,63 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
     // Don't run auth checks on the login page
     if (pathname === '/admin/login') {
       setIsLoading(false);
+      setAuthChecked(true);
       return;
     }
     
-    checkAuth();
-  }, [pathname]);
+    // Only check auth once
+    if (!authChecked) {
+      checkAuth();
+    }
+  }, [pathname, authChecked]);
 
   const checkAuth = () => {
-    if (typeof globalThis !== 'undefined' && globalThis.window) {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
+    console.log('Checking admin authentication...');
+    
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
 
-      if (token && userData && userData !== 'null' && userData !== 'undefined') {
-        try {
-          const parsedUser = JSON.parse(userData);
-          if (parsedUser && parsedUser.role === 'admin') {
-            setIsAuthenticated(true);
-            setIsAdmin(true);
-            setUser(parsedUser);
-            setIsLoading(false);
-          } else {
-            // Not an admin, redirect to main login
-            setIsLoading(false);
-            router.push('/login');
-          }
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+
+    console.log('Token exists:', !!token);
+    console.log('User data exists:', !!userData);
+
+    if (token && userData && userData !== 'null' && userData !== 'undefined') {
+      try {
+        const parsedUser = JSON.parse(userData);
+        console.log('Parsed user role:', parsedUser?.role);
+        
+        if (parsedUser && parsedUser.role === 'admin') {
+          console.log('Admin authenticated successfully');
+          setIsAuthenticated(true);
+          setIsAdmin(true);
+          setUser(parsedUser);
           setIsLoading(false);
-          router.push('/admin/login');
+          setAuthChecked(true);
+        } else {
+          // Not an admin, redirect to main login
+          console.log('User is not admin, redirecting to login');
+          setIsLoading(false);
+          setAuthChecked(true);
+          router.push('/login');
         }
-      } else {
-        // Not authenticated, redirect to admin login
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
         setIsLoading(false);
+        setAuthChecked(true);
         router.push('/admin/login');
       }
+    } else {
+      // Not authenticated, redirect to admin login
+      console.log('No valid credentials found, redirecting to admin login');
+      setIsLoading(false);
+      setAuthChecked(true);
+      router.push('/admin/login');
     }
   };
 

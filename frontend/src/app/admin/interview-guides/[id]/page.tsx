@@ -141,14 +141,14 @@ export default function AdminGuideEditorPage() {
 
       if (response.success) {
         setFormData({
-          title: response.data?.guide?.title || '',
-          description: response.data?.guide?.description || '',
-          domain: response.data?.guide?.domain || '',
-          technology: response.data?.guide?.technology || '',
-          difficulty: response.data?.guide?.difficulty || 'beginner',
-          tags: response.data?.guide?.tags || [],
-          isPublished: response.data?.guide?.isPublished || false,
-          questions: response.data?.guide?.questions || [],
+          title: response.data?.title || '',
+          description: response.data?.description || '',
+          domain: response.data?.domain || '',
+          technology: response.data?.technology || '',
+          difficulty: response.data?.difficulty || 'beginner',
+          tags: response.data?.tags || [],
+          isPublished: response.data?.isPublished || false,
+          questions: response.data?.questions || [],
         });
       } else {
         setError(response.message || 'Failed to load guide');
