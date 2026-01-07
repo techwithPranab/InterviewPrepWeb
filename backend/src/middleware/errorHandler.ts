@@ -131,9 +131,11 @@ export const asyncHandler = (fn: Function) => {
  * Not found middleware
  */
 export const notFound = (req: Request, res: Response, next: NextFunction) => {
-  const error = new Error(`Not found - ${req.originalUrl}`);
-  res.status(404);
-  next(error);
+  res.status(404).json({
+    success: false,
+    message: `Not found - ${req.originalUrl}`,
+    statusCode: 404
+  });
 };
 
 export default errorHandler;
