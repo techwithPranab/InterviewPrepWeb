@@ -185,10 +185,10 @@ export default function AdminIntervieweesPage() {
   const filteredInterviewees = interviewees;
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 1 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+      <Box sx={{ mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 0.5 }}>
           Interviewees Management
         </Typography>
         <Typography variant="body1" color="text.secondary">

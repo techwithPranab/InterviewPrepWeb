@@ -1,4 +1,2 @@
 You are senior software developer in Nodejs and ReactJS,I want to implement following task
-1) After Admin Login , its not routing to Dashboard page.
-2) After interviewer, login. Dashboard page is not showing any data, also clicking on Dashboard lisk from sidemenu routng to dashboard page
-3) Candidate Dashboard or other menu page center section is not showing priperly, lots of white spaces in begining
+1) I want to add admin pages to track Interviewer details like Acceptance %, rejection % and other metrices

@@ -28,6 +28,7 @@ import {
   Settings as SettingsIcon,
   People as UsersIcon,
   PersonSearch as IntervieweesIcon,
+  SupervisorAccount as InterviewersIcon,
   Category as SkillsIcon,
   Assessment as AnalyticsIcon,
   Logout as LogoutIcon,
@@ -173,6 +174,11 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
       text: 'Interviewees',
       icon: <IntervieweesIcon />,
       path: '/admin/interviewees',
+    },
+    {
+      text: 'Interviewers',
+      icon: <InterviewersIcon />,
+      path: '/admin/interviewers',
     },
     {
       text: 'Analytics',

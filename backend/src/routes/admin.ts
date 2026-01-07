@@ -1111,6 +1111,241 @@ router.get(
 );
 
 /**
+ * GET /api/admin/interviewers
+ * Get all interviewers with their performance metrics and statistics
+ */
+router.get(
+  '/interviewers',
+  authenticate,
+  authorize('admin'),
+  validatePagination,
+  asyncHandler(async (req: Request, res: Response) => {
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search as string;
+    const skill = req.query.skill as string;
+    const status = req.query.status as string;
+
+    // Build filter for interviewers only
+    const filter: any = { role: 'interviewer' };
+
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (skill) {
+      filter['profile.skills'] = { $in: [skill] };
+    }
+
+    if (status && status !== 'all') {
+      filter.isActive = status === 'active';
+    }
+
+    const interviewers = await User.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments(filter);
+
+    // For each interviewer, get their interview sessions and calculate performance stats
+    const interviewersWithStats = await Promise.all(interviewers.map(async (interviewer) => {
+      const sessions = await InterviewSession.find({ 
+        interviewer: interviewer._id,
+        status: 'completed'
+      }).sort({ completedAt: -1 });
+
+      // Calculate performance stats
+      const totalInterviews = sessions.length;
+      const completedInterviews = sessions.filter(session => 
+        session.status === 'completed' && session.overallEvaluation
+      ).length;
+
+      // Calculate acceptance/rejection rates based on recommendations
+      let acceptedCount = 0;
+      let rejectedCount = 0;
+      let neutralCount = 0;
+      let totalEvaluated = 0;
+      let averageScore = 0;
+      let totalScore = 0;
+
+      sessions.forEach(session => {
+        if (session.overallEvaluation?.recommendation) {
+          totalEvaluated++;
+          const recommendation = session.overallEvaluation.recommendation;
+          
+          if (recommendation === 'strongly_recommend' || recommendation === 'recommend') {
+            acceptedCount++;
+          } else if (recommendation === 'not_recommend' || recommendation === 'strongly_not_recommend') {
+            rejectedCount++;
+          } else if (recommendation === 'neutral') {
+            neutralCount++;
+          }
+
+          // Calculate average score
+          const score = session.overallEvaluation.averageScore || session.overallEvaluation.totalScore || 0;
+          totalScore += score;
+        }
+      });
+
+      if (totalEvaluated > 0) {
+        averageScore = totalScore / totalEvaluated;
+      }
+
+      const acceptanceRate = totalEvaluated > 0 ? (acceptedCount / totalEvaluated) * 100 : 0;
+      const rejectionRate = totalEvaluated > 0 ? (rejectedCount / totalEvaluated) * 100 : 0;
+
+      const lastInterviewDate = sessions.length > 0 
+        ? sessions[0].completedAt 
+        : undefined;
+
+      return {
+        profile: interviewer.toObject(),
+        sessions: sessions.slice(0, 5).map(session => ({
+          _id: session._id,
+          title: session.title,
+          candidate: session.candidate,
+          status: session.status,
+          completedAt: session.completedAt,
+          overallEvaluation: session.overallEvaluation
+        })),
+        stats: {
+          totalInterviews,
+          completedInterviews,
+          totalEvaluated,
+          acceptedCount,
+          rejectedCount,
+          neutralCount,
+          acceptanceRate: Math.round(acceptanceRate * 100) / 100, // Round to 2 decimal places
+          rejectionRate: Math.round(rejectionRate * 100) / 100,
+          averageScore: Math.round(averageScore * 100) / 100,
+          lastInterviewDate
+        }
+      };
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        interviewers: interviewersWithStats,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  })
+);
+
+/**
+ * GET /api/admin/interviewers/:id
+ * Get detailed information about a specific interviewer
+ */
+router.get(
+  '/interviewers/:id',
+  authenticate,
+  authorize('admin'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const interviewer = await User.findById(req.params.id).select('-password');
+
+    if (!interviewer || interviewer.role !== 'interviewer') {
+      return res.status(404).json({
+        success: false,
+        message: 'Interviewer not found'
+      });
+    }
+
+    // Get all interview sessions for this interviewer
+    const sessions = await InterviewSession.find({ 
+      interviewer: interviewer._id,
+      status: 'completed'
+    })
+    .populate('candidate', 'firstName lastName email')
+    .sort({ completedAt: -1 })
+    .limit(10); // Limit to recent 10 sessions
+
+    // Calculate performance stats
+    const totalInterviews = sessions.length;
+    const completedInterviews = sessions.filter(session => 
+      session.status === 'completed' && session.overallEvaluation
+    ).length;
+
+    // Calculate acceptance/rejection rates based on recommendations
+    let acceptedCount = 0;
+    let rejectedCount = 0;
+    let neutralCount = 0;
+    let totalEvaluated = 0;
+    let averageScore = 0;
+    let totalScore = 0;
+
+    sessions.forEach(session => {
+      if (session.overallEvaluation?.recommendation) {
+        totalEvaluated++;
+        const recommendation = session.overallEvaluation.recommendation;
+        
+        if (recommendation === 'strongly_recommend' || recommendation === 'recommend') {
+          acceptedCount++;
+        } else if (recommendation === 'not_recommend' || recommendation === 'strongly_not_recommend') {
+          rejectedCount++;
+        } else if (recommendation === 'neutral') {
+          neutralCount++;
+        }
+
+        // Calculate average score
+        const score = session.overallEvaluation.averageScore || session.overallEvaluation.totalScore || 0;
+        totalScore += score;
+      }
+    });
+
+    if (totalEvaluated > 0) {
+      averageScore = totalScore / totalEvaluated;
+    }
+
+    const acceptanceRate = totalEvaluated > 0 ? (acceptedCount / totalEvaluated) * 100 : 0;
+    const rejectionRate = totalEvaluated > 0 ? (rejectedCount / totalEvaluated) * 100 : 0;
+
+    const lastInterviewDate = sessions.length > 0 
+      ? sessions[0].completedAt 
+      : undefined;
+
+    res.json({
+      success: true,
+      data: {
+        profile: interviewer.toObject(),
+        sessions: sessions.map(session => ({
+          _id: session._id,
+          title: session.title,
+          candidate: session.candidate,
+          status: session.status,
+          completedAt: session.completedAt,
+          overallEvaluation: session.overallEvaluation
+        })),
+        stats: {
+          totalInterviews,
+          completedInterviews,
+          totalEvaluated,
+          acceptedCount,
+          rejectedCount,
+          neutralCount,
+          acceptanceRate: Math.round(acceptanceRate * 100) / 100, // Round to 2 decimal places
+          rejectionRate: Math.round(rejectionRate * 100) / 100,
+          averageScore: Math.round(averageScore * 100) / 100,
+          lastInterviewDate
+        }
+      }
+    });
+  })
+);
+
+/**
  * GET /api/admin/settings
  * Get system settings (admin)
  */

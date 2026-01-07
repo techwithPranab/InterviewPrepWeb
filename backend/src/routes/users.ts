@@ -42,6 +42,30 @@ router.get(
 );
 
 /**
+ * GET /api/users/me
+ * Get current authenticated user profile
+ */
+router.get(
+  '/me',
+  authenticate,
+  asyncHandler(async (req: any, res: Response) => {
+    const user = await User.findById(req.user.userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      user
+    });
+  })
+);
+
+/**
  * GET /api/users/:id
  * Get user by ID
  */
