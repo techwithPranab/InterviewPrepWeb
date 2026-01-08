@@ -223,7 +223,7 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
 
           {/* Bottom Actions */}
           <div className="px-4 py-4 border-t border-gray-200 space-y-1">
-            <Link
+            {/* <Link
               href="/interviewer-dashboard/schedule"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 transition-all shadow-md"
             >
@@ -231,7 +231,7 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               Schedule Interview
-            </Link>
+            </Link> */}
             <Link
               href="/profile"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
@@ -274,7 +274,7 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
       </div>
 
       {/* Page Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+      <main className="flex-1 w-full pt-16 lg:pt-0 min-h-screen">
         <div className="p-0">
           {children}
         </div>
