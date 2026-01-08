@@ -15,7 +15,7 @@ router.get(
   '/personal',
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
 
     const interviews = await InterviewSession.find({
       userId
@@ -242,7 +242,7 @@ router.get(
   '/performance',
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
 
     const interviews = await InterviewSession.find({ userId }).sort({ createdAt: -1 }).limit(20);
 

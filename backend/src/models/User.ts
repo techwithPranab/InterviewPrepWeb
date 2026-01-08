@@ -5,6 +5,7 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
   password: string;
   role: 'candidate' | 'interviewer' | 'admin';
   profile: {
@@ -47,6 +48,11 @@ const userSchema = new Schema<IUser>({
     unique: true,
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  phone: {
+    type: String,
+    trim: true,
+    match: [/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, 'Please enter a valid phone number']
   },
   password: {
     type: String,

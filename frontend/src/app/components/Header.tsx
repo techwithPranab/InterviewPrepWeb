@@ -16,13 +16,17 @@ export default function Header() {
     if (typeof window !== 'undefined') {
       const token = api.getToken(); // Use API client token instead of localStorage directly
       const userData = localStorage.getItem('user');
-      
-      if (token && userData && userData.trim() !== '') {
+
+      if (token && userData && userData.trim() !== '' && userData !== 'undefined' && userData !== 'null') {
         try {
           const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-          setIsAdmin(parsedUser.role === 'admin');
-          setIsAuthenticated(true);
+          if (parsedUser && typeof parsedUser === 'object') {
+            setUser(parsedUser);
+            setIsAdmin(parsedUser.role === 'admin');
+            setIsAuthenticated(true);
+          } else {
+            throw new Error('Invalid user data structure');
+          }
         } catch (error) {
           console.error('Error parsing user data:', error);
           // Clear invalid user data from localStorage

@@ -42,6 +42,15 @@ export default function RegisterPage() {
         // Store token using API client
         api.setToken(response.token);
         
+        // Store token and user in localStorage for dashboard access
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          
+          // Dispatch auth change event to update Header
+          window.dispatchEvent(new Event('authChange'));
+        }
+        
         // Redirect to dashboard
         router.push('/dashboard');
       } else {

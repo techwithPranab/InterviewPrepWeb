@@ -55,7 +55,7 @@ export default function ProfilePage() {
       const response = await api.get('/users/me');
 
       if (response.success) {
-        const userData = response.data;
+        const userData = response.user; // Changed from response.data to response.user
         setFormData({
           firstName: userData.firstName || userData.name?.split(' ')[0] || '',
           lastName: userData.lastName || userData.name?.split(' ')[1] || '',

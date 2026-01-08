@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 // @ts-ignore
 import pdfParse from 'pdf-parse';
+import cloudinaryService from './cloudinaryService';
 
 interface FileInfo {
   filename: string;
@@ -17,6 +18,8 @@ interface FileInfo {
 interface ResumeParsedData {
   text: string;
   skills: string[];
+  cloudinaryUrl?: string;
+  cloudinaryPublicId?: string;
   metadata: {
     uploadedAt: Date;
     fileName: string;
@@ -262,7 +265,7 @@ class FileService {
   /**
    * Process complete resume upload and skill extraction
    */
-  async processResumeUpload(file: Express.Multer.File): Promise<ResumeParsedData | null> {
+  async processResumeUpload(file: Express.Multer.File, userId?: string): Promise<ResumeParsedData | null> {
     try {
       // Validate file
       const validation = await this.validateFile(file);
@@ -280,7 +283,7 @@ class FileService {
       // Extract skills from text
       const skills = await this.extractSkillsFromText(extractedText);
 
-      return {
+      const result: ResumeParsedData = {
         text: extractedText,
         skills: skills,
         metadata: {
@@ -289,6 +292,20 @@ class FileService {
           fileSize: file.size
         }
       };
+
+      // Upload to Cloudinary if configured
+      if (cloudinaryService.isConfigured() && userId) {
+        const uploadResult = await cloudinaryService.uploadResume(file.path, userId);
+        if (uploadResult.success) {
+          result.cloudinaryUrl = uploadResult.url;
+          result.cloudinaryPublicId = uploadResult.publicId;
+        } else {
+          console.error('Failed to upload to Cloudinary:', uploadResult.error);
+          // Continue without Cloudinary upload
+        }
+      }
+
+      return result;
     } catch (error) {
       console.error('Error processing resume upload:', error);
       

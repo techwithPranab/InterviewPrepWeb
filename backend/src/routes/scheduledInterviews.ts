@@ -22,13 +22,14 @@ router.post(
       description,
       candidateName,
       candidateEmail,
+      candidatePhone,
       skills,
       scheduledAt,
       duration,
       registrationLink
     } = req.body;
 
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
 
     // Validate required fields
     if (!title || !candidateName || !candidateEmail || !scheduledAt || !skills || !Array.isArray(skills)) {
@@ -56,6 +57,7 @@ router.post(
       description,
       candidateName,
       candidateEmail,
+      candidatePhone,
       skills,
       scheduledAt: new Date(scheduledAt),
       duration: duration || 60,
@@ -106,7 +108,7 @@ router.get(
   authenticate,
   validatePagination,
   asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     const userRole = (req as any).user?.role;
     const page = req.query.page ? parseInt(req.query.page as string) : 1;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
@@ -169,7 +171,7 @@ router.get(
     }
 
     // Check authorization
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     const userRole = (req as any).user?.role;
 
     if (userRole === 'candidate' && interview.userId.toString() !== userId) {
@@ -211,7 +213,7 @@ router.put(
     }
 
     // Only candidate who scheduled it can update (and only if not confirmed/completed)
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     if (interview.userId.toString() !== userId) {
       return res.status(403).json({
         success: false,
@@ -262,7 +264,7 @@ router.post(
     }
 
     // Only assigned interviewer can confirm
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     if (interview.interviewerId?.toString() !== userId) {
       return res.status(403).json({
         success: false,
@@ -322,7 +324,7 @@ router.post(
     }
 
     // Only the person who scheduled it or the interviewer can cancel
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     if (interview.userId.toString() !== userId && interview.interviewerId?.toString() !== userId) {
       return res.status(403).json({
         success: false,
@@ -382,7 +384,7 @@ router.post(
     }
 
     // Only the assigned interviewer can start
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     if (interview.interviewerId?.toString() !== userId) {
       return res.status(403).json({
         success: false,
@@ -433,7 +435,7 @@ router.post(
     }
 
     // Only the assigned interviewer can complete
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
     if (interview.interviewerId?.toString() !== userId) {
       return res.status(403).json({
         success: false,

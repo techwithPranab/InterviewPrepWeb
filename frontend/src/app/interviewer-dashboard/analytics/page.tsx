@@ -26,7 +26,7 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/interviewer/analytics', { params: { timeRange } });
+      const response = await api.get('/interviewers/analytics', { params: { timeRange } });
 
       if (response.success) {
         setAnalytics(response.data);
@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">📈 Analytics</h1>
           <select

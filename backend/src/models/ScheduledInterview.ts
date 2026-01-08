@@ -7,6 +7,7 @@ export interface IScheduledInterview extends Document {
   description: string;
   candidateName: string;
   candidateEmail: string;
+  candidatePhone?: string;
   skills: string[];
   scheduledAt: Date;
   duration: number; // in minutes
@@ -46,6 +47,10 @@ const scheduledInterviewSchema = new Schema<IScheduledInterview>({
   candidateEmail: {
     type: String,
     required: true,
+  },
+  candidatePhone: {
+    type: String,
+    trim: true,
   },
   skills: [{
     type: String,

@@ -103,14 +103,14 @@ export default function InterviewsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto flex justify-center items-center min-h-96">
+      <div className="p-6 max-w-7xl flex justify-center items-center min-h-96">
         <CircularProgress />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">📋 My Interviews</h1>
         <Button

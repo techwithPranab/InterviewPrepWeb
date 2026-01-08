@@ -15,42 +15,49 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
   const pathname = usePathname();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
 
-    const storedUser = localStorage.getItem('user');
-    if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
+      const storedUser = localStorage.getItem('user');
+      if (storedUser && storedUser !== 'null' && storedUser !== 'undefined' && storedUser.trim() !== '') {
+        try {
+          const userData = JSON.parse(storedUser);
 
-        // Validate user data structure
-        if (!userData || typeof userData !== 'object' || !userData.role) {
-          throw new Error('Invalid user data structure');
-        }
-
-        // Redirect non-interviewers to appropriate dashboard
-        if (userData.role !== 'interviewer') {
-          if (userData.role === 'candidate') {
-            router.push('/dashboard');
-          } else if (userData.role === 'admin') {
-            router.push('/admin');
-          } else {
-            router.push('/login');
+          // Validate user data structure
+          if (!userData || typeof userData !== 'object' || !userData.role) {
+            throw new Error('Invalid user data structure');
           }
+
+          setUser(userData);
+
+          // Redirect non-interviewers to appropriate dashboard
+          if (userData.role !== 'interviewer') {
+            if (userData.role === 'candidate') {
+              router.push('/dashboard');
+            } else if (userData.role === 'admin') {
+              router.push('/admin');
+            } else {
+              router.push('/login');
+            }
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          localStorage.removeItem('auth_token');
+          router.push('/login');
         }
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+      } else {
         router.push('/login');
       }
-    } else {
-      router.push('/login');
-    }
+    };
+
+    checkAuth();
   }, [router]);
 
   const navigation = [
@@ -268,7 +275,7 @@ export default function InterviewerDashboardLayout({ children }: InterviewerDash
 
       {/* Page Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-        <div className="p-4 lg:p-6">
+        <div className="p-0">
           {children}
         </div>
       </main>

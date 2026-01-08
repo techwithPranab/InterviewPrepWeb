@@ -66,6 +66,49 @@ router.get(
 );
 
 /**
+ * PUT /api/users/me
+ * Update current authenticated user profile
+ */
+router.put(
+  '/me',
+  authenticate,
+  asyncHandler(async (req: any, res: Response) => {
+    const { firstName, lastName, profile } = req.body;
+
+    const user = await User.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update basic fields
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+
+    // Update profile fields
+    if (profile) {
+      if (profile.experience !== undefined) user.profile.experience = profile.experience;
+      if (profile.skills !== undefined) user.profile.skills = profile.skills;
+      if (profile.bio !== undefined) user.profile.bio = profile.bio;
+    }
+
+    await user.save();
+
+    const userResponse = user.toJSON();
+    delete (userResponse as any).password;
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: userResponse
+    });
+  })
+);
+
+/**
  * GET /api/users/:id
  * Get user by ID
  */

@@ -32,6 +32,7 @@ interface Skill {
 interface FormData {
   candidateName: string;
   candidateEmail: string;
+  candidatePhone: string;
   skills: string[];
   scheduledAt: dayjs.Dayjs;
   duration: string;
@@ -43,6 +44,7 @@ export default function SchedulePage() {
   const [formData, setFormData] = useState<FormData>({
     candidateName: '',
     candidateEmail: '',
+    candidatePhone: '',
     skills: [],
     scheduledAt: dayjs().add(1, 'day'),
     duration: '60',
@@ -168,6 +170,7 @@ export default function SchedulePage() {
       setFormData({
         candidateName: '',
         candidateEmail: '',
+        candidatePhone: '',
         skills: [],
         scheduledAt: dayjs().add(1, 'day'),
         duration: '60',
@@ -190,14 +193,14 @@ export default function SchedulePage() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto flex justify-center items-center min-h-96">
+      <div className="p-6 max-w-4xl flex justify-center items-center min-h-96">
         <CircularProgress />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">📅 Schedule Interview</h1>
 
       <Card>
@@ -236,6 +239,22 @@ export default function SchedulePage() {
                     }))
                   }
                   placeholder="e.g., john@example.com"
+                  variant="outlined"
+                />
+              </div>
+
+              {/* Candidate Phone */}
+              <div className="flex-1">
+                <FormLabel sx={{ mb: 1, color: 'text.primary', fontWeight: 500 }}>
+                  Phone Number (Optional)
+                </FormLabel>
+                <TextField
+                  fullWidth
+                  value={formData.candidatePhone}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, candidatePhone: e.target.value }))
+                  }
+                  placeholder="e.g., +1234567890"
                   variant="outlined"
                 />
               </div>
