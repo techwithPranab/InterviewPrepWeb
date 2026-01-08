@@ -211,7 +211,7 @@ export default function SharedInterviewPage() {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-8 text-center text-white">
           <h3 className="text-2xl font-bold mb-2">Ready to Test Your Skills?</h3>
           <p className="mb-6 opacity-90">
-            Join thousands of candidates preparing for their dream jobs with AI-powered mock interviews
+            Join thousands of candidates preparing for their dream jobs with MeritAI
           </p>
           <Link
             href="/register"

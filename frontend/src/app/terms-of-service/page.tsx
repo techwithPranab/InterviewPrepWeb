@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Mock Interview Platform',
-  description: 'Read our terms of service and user agreement for using Mock Interview Platform. Understand your rights and responsibilities.',
+  title: 'Terms of Service | MeritAI',
+  description: 'Read our terms of service and user agreement for using MeritAI. Understand your rights and responsibilities.',
   keywords: 'terms of service, user agreement, terms and conditions, legal terms',
 };
 
@@ -22,14 +22,14 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-700 leading-relaxed">
-              Welcome to Mock Interview Platform. These Terms of Service ("Terms") govern your use of our website, mobile application, and services (collectively, the "Service"). By accessing or using our Service, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our Service.
+              Welcome to MeritAI. These Terms of Service ("Terms") govern your use of our website, mobile application, and services (collectively, the "Service"). By accessing or using our Service, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our Service.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Description of Service</h2>
             <p className="text-gray-700 leading-relaxed">
-              Mock Interview Platform provides an AI-powered interview preparation service that helps users practice and improve their interview skills through simulated interview sessions, personalized feedback, and comprehensive interview guides. Our service includes both free and premium features.
+              MeritAI provides an AI-powered interview preparation service that helps users practice and improve their interview skills through simulated interview sessions, personalized feedback, and comprehensive interview guides. Our service includes both free and premium features.
             </p>
           </section>
 

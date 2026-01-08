@@ -30,55 +30,9 @@ export default function InterviewerDashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is authenticated using API client
-    if (!api.getToken()) {
-      router.push('/login');
-      return;
-    }
-
-    // Try to get user from Local Storage first
-    const storedUser = localStorage.getItem('user');
-    console.log('Stored user data:', storedUser);
-
-    if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-        console.log('Parsed user data:', userData);
-
-        // Validate that userData has required properties
-        if (!userData || typeof userData !== 'object' || !userData.role) {
-          throw new Error('Invalid user data structure');
-        }
-
-        // Redirect if not interviewer
-        if (userData.role !== 'interviewer') {
-          if (userData.role === 'candidate') {
-            router.push('/dashboard');
-          } else if (userData.role === 'admin') {
-            router.push('/admin');
-          } else {
-            router.push('/login');
-          }
-          return;
-        }
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        localStorage.removeItem('auth_token');
-        router.push('/login');
-        return;
-      }
-    } else {
-      // No valid user data stored, redirect to login
-      router.push('/login');
-      return;
-    }
-
-    // Fetch fresh user data and stats
+    // Fetch user profile and stats
     fetchUserProfile();
-  }, [router]);
+  }, []);
 
   const fetchUserProfile = async () => {
     try {
@@ -140,7 +94,7 @@ export default function InterviewerDashboardPage() {
   }
 
   return (
-    <div className="p-4 lg:p-6">
+    <>
       {/* Welcome Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">
@@ -337,6 +291,6 @@ export default function InterviewerDashboardPage() {
           </div>
         </Link>
       </div>
-    </div>
+    </>
   );
 }

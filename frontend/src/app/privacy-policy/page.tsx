@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Mock Interview Platform',
-  description: 'Learn how Mock Interview Platform collects, uses, and protects your personal information. Our comprehensive privacy policy explains data handling practices.',
+  title: 'Privacy Policy | MeritAI',
+  description: 'Learn how MeritAI collects, uses, and protects your personal information. Our comprehensive privacy policy explains data handling practices.',
   keywords: 'privacy policy, data protection, personal information, GDPR, privacy rights',
 };
 
@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              Welcome to Mock Interview Platform ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI-powered interview preparation platform.
+              Welcome to MeritAI ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI-powered interview preparation platform.
             </p>
           </section>
 
@@ -159,7 +159,7 @@ export default function PrivacyPolicyPage() {
                 <strong>Email:</strong> <a href="mailto:privacy@mockinterview.com" className="text-blue-600 hover:text-blue-800">privacy@mockinterview.com</a>
               </p>
               <p className="text-gray-700 mt-2">
-                <strong>Address:</strong> Mock Interview Platform Privacy Team
+                <strong>Address:</strong> MeritAI Privacy Team
               </p>
             </div>
           </section>

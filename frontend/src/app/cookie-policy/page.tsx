@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cookie Policy | Mock Interview Platform',
-  description: 'Understand how Mock Interview Platform uses cookies and tracking technologies. Learn about your cookie preferences and privacy choices.',
+  title: 'Cookie Policy | MeritAI',
+  description: 'Understand how MeritAI uses cookies and tracking technologies. Learn about your cookie preferences and privacy choices.',
   keywords: 'cookie policy, cookies, tracking, privacy, data collection',
 };
 

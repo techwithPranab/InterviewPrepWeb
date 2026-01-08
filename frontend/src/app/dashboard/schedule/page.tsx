@@ -34,7 +34,7 @@ export default function SchedulePage() {
 
   const fetchScheduledInterviews = async () => {
     try {
-      const response = await api.get('/schedule', {
+      const response = await api.get('/scheduled-interviews', {
         params: { upcoming: 'true' }
       });
 
@@ -52,7 +52,7 @@ export default function SchedulePage() {
     e.preventDefault();
 
     try {
-      const response = await api.post('/schedule', formData);
+      const response = await api.post('/scheduled-interviews', formData);
 
       if (response.success) {
         alert('Interview scheduled successfully!');
@@ -80,7 +80,7 @@ export default function SchedulePage() {
     }
 
     try {
-      const response = await api.delete(`/schedule/${id}`);
+      const response = await api.delete(`/scheduled-interviews/${id}`);
 
       if (response.success) {
         alert('Interview cancelled successfully!');

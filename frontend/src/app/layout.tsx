@@ -7,7 +7,7 @@ import ConditionalLayout from "./components/ConditionalLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Mock Interview Platform",
+  title: "MeritAI - AI-Powered Interview Preparation",
   description: "Practice interviews with AI-generated questions and real-time feedback",
 };
 

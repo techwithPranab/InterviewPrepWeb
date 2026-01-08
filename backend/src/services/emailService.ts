@@ -25,7 +25,7 @@ class EmailService {
   async sendEmail(options: EmailOptions): Promise<boolean> {
     try {
       const mailOptions = {
-        from: `"Mock Interview Platform" <${process.env.SMTP_USER}>`,
+        from: `"MeritAI" <${process.env.SMTP_USER}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -121,8 +121,8 @@ class EmailService {
               </div>
             </div>
             <div class="footer">
-              <p>This is an automated message from Mock Interview Platform</p>
-              <p>© 2024 Mock Interview Platform. All rights reserved.</p>
+              <p>This is an automated message from MeritAI</p>
+              <p>© 2024 MeritAI. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -186,8 +186,8 @@ class EmailService {
               <p>Remember: Every expert was once a beginner. Keep pushing forward!</p>
             </div>
             <div class="footer">
-              <p>This is an automated reminder from Mock Interview Platform</p>
-              <p>© 2024 Mock Interview Platform. All rights reserved.</p>
+              <p>This is an automated reminder from MeritAI</p>
+              <p>© 2024 MeritAI. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -318,7 +318,7 @@ class EmailService {
               <p>Good luck with your interview! 🚀</p>
             </div>
             <div class="footer">
-              <p>© 2024 Mock Interview Platform. All rights reserved.</p>
+              <p>© 2024 MeritAI. All rights reserved.</p>
             </div>
           </div>
         </body>

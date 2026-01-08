@@ -96,7 +96,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 shadow-md sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
@@ -105,8 +105,8 @@ export default function Header() {
             className="text-lg sm:text-xl md:text-2xl font-bold text-blue-700 tracking-tight"
             onClick={closeMobileMenu}
           >
-            <span className="hidden sm:inline">Mock Interview Platform</span>
-            <span className="sm:hidden">Mock Interview</span>
+            <span className="hidden sm:inline">MeritAI</span>
+            <span className="sm:hidden">MeritAI</span>
           </Link>
 
           {/* Desktop Navigation */}

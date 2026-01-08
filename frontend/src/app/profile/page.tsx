@@ -77,7 +77,7 @@ export default function ProfilePage() {
     try {
       const response = await api.get('/skills');
       if (response.success) {
-        setAvailableSkills(response.data?.skills || []);
+        setAvailableSkills(response.data || []);
       }
     } catch (error) {
       console.error('Error fetching skills:', error);

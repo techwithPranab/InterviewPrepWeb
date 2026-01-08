@@ -74,7 +74,7 @@ export default function SchedulePage() {
       const response = await api.get('/skills');
 
       if (response.success) {
-        setAvailableSkills(response.data?.skills || []);
+        setAvailableSkills(response.data || []);
       } else {
         setError('Failed to load skills');
       }
@@ -156,7 +156,7 @@ export default function SchedulePage() {
         submitData.append('resume', formData.resume);
       }
 
-      const result = await api.uploadFormData('/schedule/interview', submitData);
+      const result = await api.uploadFormData('/scheduled-interviews', submitData);
 
       if (!result.success) {
         throw new Error(result.message || 'Failed to schedule interview');

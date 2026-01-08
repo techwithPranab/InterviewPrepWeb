@@ -139,7 +139,7 @@ export default function InterviewSummaryPage() {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link href="/dashboard" className="text-xl font-semibold text-gray-900">
-                Mock Interview Platform
+                MeritAI
               </Link>
             </div>
             <div className="flex items-center space-x-4">

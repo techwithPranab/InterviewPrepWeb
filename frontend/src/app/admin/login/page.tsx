@@ -210,7 +210,7 @@ export default function AdminLoginPage() {
         {/* Footer */}
         <Box sx={{ mt: 4, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            © 2025 AI Mock Interview Platform. Admin Access Only.
+            © 2025 MeritAI. Admin Access Only.
           </Typography>
         </Box>
       </Container>

@@ -76,7 +76,7 @@ export default function NewInterviewPage() {
     try {
       const response = await api.get('/skills');
       if (response.success) {
-        setAvailableSkills(response.data?.skills || []);
+        setAvailableSkills(response.data || []);
       } else {
         console.error('Error fetching skills:', response.message);
       }
@@ -108,7 +108,7 @@ export default function NewInterviewPage() {
 
       // Create interview session via API
       const response = await api.post('/interview/create', {
-        title: `Mock Interview - ${new Date().toLocaleDateString()}`,
+        title: `MeritAI Interview - ${new Date().toLocaleDateString()}`,
         skills: interviewConfig.selectedSkills,
         duration: parseInt(interviewConfig.duration),
         difficulty: interviewConfig.difficulty,

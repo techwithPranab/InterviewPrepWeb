@@ -1,7 +1,7 @@
 {
   "name": "mockinterview-frontend",
   "version": "1.0.0",
-  "description": "Frontend UI for Mock Interview Platform",
+  "description": "Frontend UI for MeritAI - AI-Powered Interview Preparation Platform",
   "private": true,
   "scripts": {
     "dev": "next dev",

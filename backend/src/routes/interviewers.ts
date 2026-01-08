@@ -388,9 +388,113 @@ router.get(
       }
     ];
 
+  })
+);
+
+/**
+ * GET /api/interviewers/analytics
+ * Get analytics data for interviewers
+ */
+router.get(
+  '/analytics',
+  authenticate,
+  authorize('interviewer'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const timeRange = req.query.timeRange as string || '90d';
+    const userId = (req as any).user?.id;
+
+    // Calculate date range
+    const now = new Date();
+    let startDate: Date;
+    switch (timeRange) {
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      case '1y':
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    }
+
+    // Get interviews conducted by this interviewer
+    const interviews = await ScheduledInterview.find({
+      interviewerId: userId,
+      createdAt: { $gte: startDate }
+    }).populate('userId', 'name').populate('skillId', 'name');
+
+    const totalInterviews = interviews.length;
+    const completedInterviews = interviews.filter(i => i.status === 'completed').length;
+    const pendingInterviews = interviews.filter(i => i.status === 'scheduled').length;
+
+    // Calculate average rating (assuming rating is stored somewhere)
+    const ratings = interviews.filter(i => i.status === 'completed' && (i as any).rating).map(i => (i as any).rating);
+    const averageRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+
+    const completionRate = totalInterviews > 0 ? (completedInterviews / totalInterviews) * 100 : 0;
+
+    // Monthly progress
+    const monthlyProgress: any[] = [];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const month = monthNames[date.getMonth()];
+      const year = date.getFullYear();
+      
+      const monthInterviews = interviews.filter(interview => {
+        const interviewDate = new Date(interview.createdAt);
+        return interviewDate.getMonth() === date.getMonth() && interviewDate.getFullYear() === year;
+      });
+      
+      const completed = monthInterviews.filter(i => i.status === 'completed').length;
+      
+      monthlyProgress.push({
+        month: `${month} ${year}`,
+        interviews: monthInterviews.length,
+        completed
+      });
+    }
+
+    // Top performers (candidates with highest average scores)
+    const candidateScores: any = {};
+    interviews.filter(i => i.status === 'completed' && (i as any).score).forEach(interview => {
+      const candidateId = (interview.userId as any)._id.toString();
+      const candidateName = (interview.userId as any).name;
+      const score = (interview as any).score;
+      
+      if (!candidateScores[candidateId]) {
+        candidateScores[candidateId] = { name: candidateName, scores: [], count: 0 };
+      }
+      candidateScores[candidateId].scores.push(score);
+      candidateScores[candidateId].count += 1;
+    });
+
+    const topPerformers = Object.entries(candidateScores)
+      .map(([id, data]: [string, any]) => ({
+        candidateId: id,
+        candidateName: data.name,
+        avgScore: data.scores.reduce((a: number, b: number) => a + b, 0) / data.scores.length,
+        interviewCount: data.count
+      }))
+      .sort((a, b) => b.avgScore - a.avgScore)
+      .slice(0, 5);
+
     res.json({
       success: true,
-      interviewHistory: history
+      data: {
+        totalInterviews,
+        completedInterviews,
+        pendingInterviews,
+        averageRating: Math.round(averageRating * 10) / 10,
+        completionRate: Math.round(completionRate * 10) / 10,
+        monthlyProgress,
+        topPerformers
+      }
     });
   })
 );
