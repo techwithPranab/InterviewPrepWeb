@@ -3,7 +3,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 export interface IScheduledInterview extends Document {
   userId: mongoose.Types.ObjectId;
   interviewerId?: mongoose.Types.ObjectId;
-  title: string;
+  title: string; // Mr, Mrs, Ms, Dr, etc.
   description: string;
   candidateName: string;
   candidateEmail: string;
@@ -35,6 +35,8 @@ const scheduledInterviewSchema = new Schema<IScheduledInterview>({
   title: {
     type: String,
     required: true,
+    enum: ['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Mx'],
+    trim: true,
   },
   description: {
     type: String,

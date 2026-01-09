@@ -4,9 +4,32 @@ import User from '../models/User';
 import { authenticate, authorize } from '../middleware/auth';
 import { validatePagination } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
-import EmailService from '../services/emailService';
+import brevoService from '../services/brevoService';
+import multer from 'multer';
+import fileService from '../services/fileService';
+import cloudinaryService from '../services/cloudinaryService';
 
 const router = Router();
+
+// Configure multer for resume uploads (memory storage since we upload to Cloudinary)
+const resumeUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, DOC, and DOCX files are allowed for resumes.'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
 
 /**
  * POST /api/scheduled-interviews
@@ -15,7 +38,11 @@ const router = Router();
 router.post(
   '/',
   authenticate,
+  resumeUpload.single('resume'),
   asyncHandler(async (req: Request, res: Response) => {
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
+
     const {
       interviewerId,
       title,
@@ -30,14 +57,18 @@ router.post(
     } = req.body;
 
     const userId = (req as any).user?.userId;
-
+    console.log('Scheduling interview for user:', userId);
+    
     // Validate required fields
-    if (!title || !candidateName || !candidateEmail || !scheduledAt || !skills || !Array.isArray(skills)) {
+    if (!title || !candidateName || !candidateEmail || !scheduledAt || !skills || !Array.isArray(JSON.parse(skills))) {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields'
       });
     }
+
+    // Parse skills if it's a string (from FormData)
+    const parsedSkills = typeof skills === 'string' ? JSON.parse(skills) : skills;
 
     // Check if interviewer exists
     if (interviewerId) {
@@ -50,6 +81,23 @@ router.post(
       }
     }
 
+    // Handle resume upload if provided
+    let resumeUrl = '';
+    if (req.file) {
+      try {
+        const uploadResult = await cloudinaryService.uploadBuffer(req.file.buffer, req.file.originalname, 'MeritAI/Resume');
+        if (uploadResult.success && uploadResult.url) {
+          resumeUrl = uploadResult.url;
+          console.log('Resume uploaded to:', resumeUrl);
+        } else {
+          console.error('Resume upload failed:', uploadResult.error);
+        }
+      } catch (error) {
+        console.error('Resume upload error:', error);
+        // Don't fail the request if resume upload fails
+      }
+    }
+
     const newInterview = new ScheduledInterview({
       userId,
       interviewerId,
@@ -58,31 +106,41 @@ router.post(
       candidateName,
       candidateEmail,
       candidatePhone,
-      skills,
+      skills: parsedSkills,
       scheduledAt: new Date(scheduledAt),
       duration: duration || 60,
       registrationLink,
+      resumeUrl,
       status: 'scheduled'
     });
 
     await newInterview.save();
 
-    // Send confirmation email to candidate
+    // Send confirmation email to candidate using Brevo template
     try {
-      await EmailService.sendEmail({
-        to: candidateEmail,
-        subject: `Interview Scheduled: ${title}`,
-        html: `
-          <h2>Interview Scheduled</h2>
-          <p>Your interview has been scheduled for ${new Date(scheduledAt).toLocaleString()}</p>
-          <p>Title: ${title}</p>
-          <p>Duration: ${duration || 60} minutes</p>
-          <p>Skills: ${skills.join(', ')}</p>
-          ${registrationLink ? `<p><a href="${registrationLink}">Join Interview</a></p>` : ''}
-        `
+      // Get interviewer name if exists
+      let interviewerName = 'MockInterview Team';
+      if (interviewerId) {
+        const interviewer = await User.findById(interviewerId);
+        if (interviewer) {
+          interviewerName = `${interviewer.firstName} ${interviewer.lastName}`;
+        }
+      }
+
+      await brevoService.sendInterviewScheduledEmail({
+        candidateName,
+        candidateEmail,
+        interviewerName,
+        interviewDate: new Date(scheduledAt).toLocaleDateString(),
+        interviewTime: new Date(scheduledAt).toLocaleTimeString(),
+        duration: duration || 60,
+        meetingLink: registrationLink,
+        skills: parsedSkills,
       });
+
+      console.log('✅ Interview scheduled email sent to:', candidateEmail);
     } catch (error) {
-      console.error('Email send error:', error);
+      console.error('❌ Email send error:', error);
       // Don't fail the request if email fails
     }
 
@@ -282,20 +340,28 @@ router.post(
     interview.status = 'confirmed';
     await interview.save();
 
-    // Send confirmation to candidate
+    // Send confirmation to candidate (using basic email since no confirmation template yet)
     try {
-      await EmailService.sendEmail({
-        to: interview.candidateEmail,
+      await brevoService.sendEmail({
+        to: [interview.candidateEmail],
         subject: `Interview Confirmed: ${interview.title}`,
-        html: `
-          <h2>Interview Confirmed</h2>
-          <p>Your interview has been confirmed for ${interview.scheduledAt.toLocaleString()}</p>
-          <p>Interviewer: ${(interview as any).interviewerId?.name}</p>
-          ${interview.meetingLink ? `<p><a href="${interview.meetingLink}">Join Meeting</a></p>` : ''}
+        htmlContent: `
+          <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <h2 style="color: #10b981;">✅ Interview Confirmed</h2>
+              <p>Hello ${interview.candidateName},</p>
+              <p>Your interview has been confirmed for ${interview.scheduledAt.toLocaleString()}</p>
+              ${interview.meetingLink ? `<p><a href="${interview.meetingLink}" style="display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 6px;">Join Meeting</a></p>` : ''}
+              <br>
+              <p>Best regards,<br>MockInterview Platform Team</p>
+            </body>
+          </html>
         `
       });
+      
+      console.log('✅ Interview confirmation email sent to:', interview.candidateEmail);
     } catch (error) {
-      console.error('Email send error:', error);
+      console.error('❌ Email send error:', error);
     }
 
     res.json({
@@ -343,19 +409,19 @@ router.post(
     interview.notes = req.body.reason || interview.notes;
     await interview.save();
 
-    // Notify both parties
+    // Notify candidate about cancellation
     try {
-      await EmailService.sendEmail({
-        to: interview.candidateEmail,
-        subject: `Interview Cancelled: ${interview.title}`,
-        html: `
-          <h2>Interview Cancelled</h2>
-          <p>Your interview scheduled for ${interview.scheduledAt.toLocaleString()} has been cancelled.</p>
-          ${req.body.reason ? `<p>Reason: ${req.body.reason}</p>` : ''}
-        `
+      await brevoService.sendInterviewCancelledEmail({
+        candidateName: interview.candidateName,
+        candidateEmail: interview.candidateEmail,
+        interviewerName: 'MockInterview Team',
+        interviewDate: interview.scheduledAt.toLocaleDateString(),
+        reason: req.body.reason || 'Not specified'
       });
+      
+      console.log('✅ Interview cancellation email sent to:', interview.candidateEmail);
     } catch (error) {
-      console.error('Email send error:', error);
+      console.error('❌ Email send error:', error);
     }
 
     res.json({
@@ -456,19 +522,28 @@ router.post(
 
     await interview.save();
 
-    // Send completion email
+    // Send completion confirmation (optional - you can create a template for this)
     try {
-      await EmailService.sendEmail({
-        to: interview.candidateEmail,
+      await brevoService.sendEmail({
+        to: [interview.candidateEmail],
         subject: `Interview Completed: ${interview.title}`,
-        html: `
-          <h2>Interview Completed</h2>
-          <p>Your interview on ${interview.scheduledAt.toLocaleString()} has been completed.</p>
-          <p>Thank you for participating!</p>
+        htmlContent: `
+          <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <h2 style="color: #10b981;">✅ Interview Completed</h2>
+              <p>Hello ${interview.candidateName},</p>
+              <p>Your interview on ${interview.scheduledAt.toLocaleString()} has been completed.</p>
+              <p>Thank you for participating! We will be in touch with next steps shortly.</p>
+              <br>
+              <p>Best regards,<br>MockInterview Platform Team</p>
+            </body>
+          </html>
         `
       });
+      
+      console.log('✅ Interview completion email sent to:', interview.candidateEmail);
     } catch (error) {
-      console.error('Email send error:', error);
+      console.error('❌ Email send error:', error);
     }
 
     res.json({

@@ -4,6 +4,7 @@ import fs from 'fs';
 // @ts-ignore
 import pdfParse from 'pdf-parse';
 import cloudinaryService from './cloudinaryService';
+import resumeParserService from './resumeParserService';
 
 interface FileInfo {
   filename: string;
@@ -20,6 +21,7 @@ interface ResumeParsedData {
   skills: string[];
   cloudinaryUrl?: string;
   cloudinaryPublicId?: string;
+  candidateProfileId?: string; // ID of saved candidate profile
   metadata: {
     uploadedAt: Date;
     fileName: string;
@@ -72,7 +74,7 @@ const SKILL_KEYWORDS: { [key: string]: string[] } = {
 
 class FileService {
   /**
-   * Get multer configuration for file uploads
+   * Get multer configuration for file uploads (PDF only for resumes)
    */
   getMulterConfig(): Multer {
     const storage: StorageEngine = multer.diskStorage({
@@ -93,13 +95,11 @@ class FileService {
         fileSize: MAX_FILE_SIZE
       },
       fileFilter: (req, file, cb) => {
-        const allowedMimes = ['application/pdf', 'application/msword', 
-                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        
-        if (allowedMimes.includes(file.mimetype)) {
+        // Only allow PDF files for resume upload
+        if (file.mimetype === 'application/pdf') {
           cb(null, true);
         } else {
-          cb(new Error(`Unsupported file type: ${file.mimetype}`));
+          cb(new Error('Only PDF files are allowed. Please upload a PDF file.'));
         }
       }
     });
@@ -108,21 +108,21 @@ class FileService {
   /**
    * Extract text from PDF file
    */
-  async extractResumeText(filePath: string): Promise<string> {
+  async extractResumeText(filePathOrBuffer: string | Buffer): Promise<string> {
     try {
-      const fileBuffer = fs.readFileSync(filePath);
+      let fileBuffer: Buffer;
       
-      if (filePath.endsWith('.pdf')) {
-        const pdfData = await pdfParse(fileBuffer);
-        return pdfData.text;
-      } else if (filePath.endsWith('.doc') || filePath.endsWith('.docx')) {
-        // Placeholder for DOC parsing (would need npm package like docx-parser)
-        // For now, return a message indicating DOC parsing is not fully implemented
-        console.warn('DOC/DOCX parsing not fully implemented, text extraction may be limited');
-        return `[Document processed: ${path.basename(filePath)}]`;
+      if (typeof filePathOrBuffer === 'string') {
+        // It's a file path
+        fileBuffer = fs.readFileSync(filePathOrBuffer);
+      } else {
+        // It's already a buffer
+        fileBuffer = filePathOrBuffer;
       }
       
-      return '';
+      // Only support PDF files now
+      const pdfData = await pdfParse(fileBuffer);
+      return pdfData.text;
     } catch (error) {
       console.error('Error extracting resume text:', error);
       throw new Error('Failed to extract text from resume');
@@ -274,13 +274,13 @@ class FileService {
       }
 
       // Extract text from resume
-      const extractedText = await this.extractResumeText(file.path);
+      const extractedText = await this.extractResumeText(file.buffer);
       
       if (!extractedText) {
         throw new Error('Could not extract text from resume');
       }
 
-      // Extract skills from text
+      // Extract skills from text (basic extraction)
       const skills = await this.extractSkillsFromText(extractedText);
 
       const result: ResumeParsedData = {
@@ -294,14 +294,38 @@ class FileService {
       };
 
       // Upload to Cloudinary if configured
+      let cloudinaryUrl: string | undefined;
+      let cloudinaryPublicId: string | undefined;
+      
       if (cloudinaryService.isConfigured() && userId) {
-        const uploadResult = await cloudinaryService.uploadResume(file.path, userId);
+        const uploadResult = await cloudinaryService.uploadBuffer(file.buffer, file.originalname, `MeritAI/Resume/${userId}`);
         if (uploadResult.success) {
-          result.cloudinaryUrl = uploadResult.url;
-          result.cloudinaryPublicId = uploadResult.publicId;
+          cloudinaryUrl = uploadResult.url;
+          cloudinaryPublicId = uploadResult.publicId;
+          result.cloudinaryUrl = cloudinaryUrl;
+          result.cloudinaryPublicId = cloudinaryPublicId;
         } else {
           console.error('Failed to upload to Cloudinary:', uploadResult.error);
           // Continue without Cloudinary upload
+        }
+      }
+
+      // Parse resume with AI and save to database
+      if (userId && cloudinaryUrl) {
+        try {
+          const parsedData = await resumeParserService.parseResumeWithAI(extractedText);
+          const candidateProfile = await resumeParserService.saveToDatabase(
+            userId,
+            parsedData,
+            cloudinaryUrl,
+            cloudinaryPublicId,
+            extractedText
+          );
+          result.candidateProfileId = candidateProfile._id.toString();
+          console.log('✅ Resume parsed and candidate profile created:', candidateProfile._id);
+        } catch (aiError) {
+          console.error('⚠️  AI parsing failed, but resume was uploaded:', aiError);
+          // Continue even if AI parsing fails - resume is still uploaded
         }
       }
 
@@ -309,11 +333,7 @@ class FileService {
     } catch (error) {
       console.error('Error processing resume upload:', error);
       
-      // Clean up uploaded file on error
-      if (file && file.path) {
-        await this.deleteFile(file.path);
-      }
-
+      // No cleanup needed for memory storage - files are not saved locally
       throw error;
     }
   }

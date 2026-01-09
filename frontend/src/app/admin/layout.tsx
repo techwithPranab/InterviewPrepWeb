@@ -33,6 +33,7 @@ import {
   Assessment as AnalyticsIcon,
   Logout as LogoutIcon,
   AccountCircle as AccountIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -184,6 +185,11 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
       text: 'Analytics',
       icon: <AnalyticsIcon />,
       path: '/admin/analytics',
+    },
+    {
+      text: 'Email Templates',
+      icon: <EmailIcon />,
+      path: '/admin/email-templates',
     },
     {
       text: 'Settings',

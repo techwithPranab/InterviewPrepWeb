@@ -41,9 +41,7 @@ const statusColors: Record<string, 'error' | 'warning' | 'success' | 'info'> = {
   confirmed: 'warning',
   completed: 'success',
   cancelled: 'error',
-};
-
-export default function InterviewsPage() {
+};export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<ScheduledInterview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,6 +49,35 @@ export default function InterviewsPage() {
   const [selectedInterview, setSelectedInterview] = useState<ScheduledInterview | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const router = useRouter();
+
+  const handleDownloadResume = async (resumeUrl: string) => {
+    try {
+      // Fetch the file as a blob
+      const response = await fetch(resumeUrl);
+      const blob = await response.blob();
+      
+      // Create a blob URL
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Create a temporary anchor element for download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'resume.pdf'; // Default filename
+      link.style.display = 'none';
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Failed to download resume:', error);
+      // Fallback: open in new tab
+      window.open(resumeUrl, '_blank');
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -77,9 +104,9 @@ export default function InterviewsPage() {
       }
 
       const response = await api.get('/interviewers/scheduled-interviews', { params });
-
+      console.log('Fetch Interviews Response:', response);  
       if (response.success) {
-        setInterviews(response.data?.interviews || []);
+        setInterviews(response.interviews || []);
       } else {
         throw new Error(response.message || 'Failed to fetch interviews');
       }
@@ -112,7 +139,7 @@ export default function InterviewsPage() {
   return (
     <div className="p-6 max-w-7xl">
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">📋 My Interviews</h1>
+        <h1 className="text-2xl font-bold text-gray-900">📋 My Interviews</h1>
         <Button
           variant="contained"
           color="primary"
@@ -146,8 +173,8 @@ export default function InterviewsPage() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No Interviews Yet</h2>
-              <p className="text-gray-600">
+              <h2 className="text-base font-semibold text-gray-900 mb-2">No Interviews Yet</h2>
+              <p className="text-sm text-gray-600">
                 {statusFilter === 'all'
                   ? 'You haven\'t created any interviews yet. Create one to get started!'
                   : `No ${statusFilter} interviews found.`}
@@ -255,14 +282,14 @@ export default function InterviewsPage() {
 
               <div>
                 <strong>Status:</strong>
-                <p>
+                <div className="mt-2">
                   <Chip
                     label={selectedInterview.status}
                     color={statusColors[selectedInterview.status]}
                     size="small"
                     variant="outlined"
                   />
-                </p>
+                </div>
               </div>
 
               <div>
@@ -286,9 +313,8 @@ export default function InterviewsPage() {
                   <strong>Resume:</strong>
                   <Button
                     size="small"
-                    href={selectedInterview.resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={() => handleDownloadResume(selectedInterview.resumeUrl!)}
+                    sx={{ mt: 1 }}
                   >
                     Download Resume
                   </Button>

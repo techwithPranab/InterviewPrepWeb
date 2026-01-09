@@ -56,7 +56,7 @@ export default function InterviewHistoryPage() {
       if (filters.skill) params.skill = filters.skill;
       if (filters.difficulty) params.difficulty = filters.difficulty;
 
-      const response = await api.get('/user/interviews', { params });
+      const response = await api.get('/interviews', { params });
 
       if (!response.success) {
         throw new Error(response.message || 'Failed to fetch interviews');

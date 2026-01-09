@@ -16,6 +16,7 @@ import {
   InputAdornment,
   Chip,
   Autocomplete,
+  MenuItem,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -30,6 +31,7 @@ interface Skill {
 }
 
 interface FormData {
+  title: string; // Salutation: Mr, Mrs, Ms, Dr, etc.
   candidateName: string;
   candidateEmail: string;
   candidatePhone: string;
@@ -42,6 +44,7 @@ interface FormData {
 
 export default function SchedulePage() {
   const [formData, setFormData] = useState<FormData>({
+    title: '',
     candidateName: '',
     candidateEmail: '',
     candidatePhone: '',
@@ -106,6 +109,14 @@ export default function SchedulePage() {
   };
 
   const validateForm = (): boolean => {
+    if (!formData.title.trim()) {
+      setError('Title is required');
+      return false;
+    }
+    if (!['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Mx'].includes(formData.title)) {
+      setError('Please select a valid title');
+      return false;
+    }
     if (!formData.candidateName.trim()) {
       setError('Candidate name is required');
       return false;
@@ -147,6 +158,7 @@ export default function SchedulePage() {
     try {
       // Prepare form data for multipart/form-data
       const submitData = new FormData();
+      submitData.append('title', formData.title);
       submitData.append('candidateName', formData.candidateName);
       submitData.append('candidateEmail', formData.candidateEmail);
       submitData.append('skills', JSON.stringify(formData.skills));
@@ -168,6 +180,7 @@ export default function SchedulePage() {
       
       // Reset form
       setFormData({
+        title: '',
         candidateName: '',
         candidateEmail: '',
         candidatePhone: '',
@@ -201,7 +214,7 @@ export default function SchedulePage() {
 
   return (
     <div className="p-6 max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">📅 Schedule Interview</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">📅 Schedule Interview</h1>
 
       <Card>
         <CardContent>
@@ -211,9 +224,31 @@ export default function SchedulePage() {
 
             {/* Candidate Information Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Candidate Information</h2>
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Candidate Information</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TextField
+                  select
+                  fullWidth
+                  label="Title"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  variant="outlined"
+                  required
+                >
+                  <MenuItem value="">Select Title</MenuItem>
+                  <MenuItem value="Mr">Mr</MenuItem>
+                  <MenuItem value="Mrs">Mrs</MenuItem>
+                  <MenuItem value="Ms">Ms</MenuItem>
+                  <MenuItem value="Dr">Dr</MenuItem>
+                  <MenuItem value="Prof">Prof</MenuItem>
+                  <MenuItem value="Mx">Mx</MenuItem>
+                </TextField>
                 <TextField
                   fullWidth
                   label="Candidate Name"
@@ -225,20 +260,6 @@ export default function SchedulePage() {
                     }))
                   }
                   placeholder="e.g., John Doe"
-                  variant="outlined"
-                />
-                <TextField
-                  fullWidth
-                  label="Candidate Email"
-                  type="email"
-                  value={formData.candidateEmail}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      candidateEmail: e.target.value,
-                    }))
-                  }
-                  placeholder="e.g., john@example.com"
                   variant="outlined"
                 />
               </div>
@@ -258,6 +279,21 @@ export default function SchedulePage() {
                   variant="outlined"
                 />
               </div>
+
+              <TextField
+                fullWidth
+                label="Candidate Email"
+                type="email"
+                value={formData.candidateEmail}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    candidateEmail: e.target.value,
+                  }))
+                }
+                placeholder="e.g., john@example.com"
+                variant="outlined"
+              />
             </div>
 
             {/* Skills Section */}
@@ -351,7 +387,7 @@ export default function SchedulePage() {
 
             {/* Interview Details Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Interview Details</h2>
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Interview Details</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <LocalizationProvider dateAdapter={AdapterDayjs}>

@@ -22,6 +22,8 @@ import './models/CollaborativeSession';
 import './models/SystemSettings';
 import './models/InterviewSession';
 import './models/QuestionBank';
+import './models/EmailTemplate';
+import './models/CandidateProfile';
 
 // Import middleware
 import errorHandler, { notFound, asyncHandler } from './middleware/errorHandler';
@@ -71,6 +73,8 @@ import scheduledInterviewsRoutes from './routes/scheduledInterviews';
 import adminRoutes from './routes/admin';
 import analyticsRoutes from './routes/analytics';
 import interviewersRoutes from './routes/interviewers';
+import emailTemplatesRoutes from './routes/emailTemplates';
+import candidateProfilesRoutes from './routes/candidateProfiles';
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -82,6 +86,8 @@ app.use('/api/scheduled-interviews', scheduledInterviewsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/interviewers', interviewersRoutes);
+app.use('/api/email-templates', emailTemplatesRoutes);
+app.use('/api/candidate-profiles', candidateProfilesRoutes);
 
 // Service availability endpoints (for development)
 if (NODE_ENV === 'development') {

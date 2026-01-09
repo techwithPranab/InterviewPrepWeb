@@ -1,10 +1,5 @@
 You are senior software developer in Nodejs and ReactJS,I want to implement following task
-1) After Interviewer login, on page refresh its routing to login page
-2) Remove the padding of Center section of the layout after login
-3) {"success":false,"message":"Not found - /api/interviewer/analytics?timeRange=90d","statusCode":404}
-4) After login, Overview page is not showing any stats
-5) Add Cloudary Integration with secret and key for resume upload section
-6) Add Candidate phone number in Schedule interview section
-8) Reduce the font size of Center section of layout to match with leftside bar
-
-Create todo item and start impplementing the same
+1) I want to restrict only PDF file to be uploaded in resume.
+2) I want to create a functionality to read the resume and extract the candidate details like pesronal information,
+    , Skill Set, experience summary, Project details etc so that those informatin can be used to generate Interview Question.
+3) The extracted informaation should be saved in different model 

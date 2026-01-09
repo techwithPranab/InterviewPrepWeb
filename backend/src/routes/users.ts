@@ -3,8 +3,25 @@ import User from '../models/User';
 import { authenticate, authorize } from '../middleware/auth';
 import { validateUserUpdate, validatePagination } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
+import fileService from '../services/fileService';
+import multer from 'multer';
 
 const router = Router();
+
+// Configure multer for resume uploads (memory storage since we upload to Cloudinary)
+const resumeUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed. Please upload a PDF file.'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 /**
  * GET /api/users
@@ -346,6 +363,51 @@ router.delete(
       success: true,
       message: 'Skill removed successfully'
     });
+  })
+);
+
+/**
+ * POST /api/users/resume/upload
+ * Upload and parse resume (PDF only)
+ */
+router.post(
+  '/resume/upload',
+  authenticate,
+  resumeUpload.single('resume'),
+  asyncHandler(async (req: any, res: Response) => {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No resume file uploaded'
+      });
+    }
+
+    const file = req.file;
+
+    try {
+      // Process the resume upload
+      const result = await fileService.processResumeUpload(file, req.user.userId);
+
+      if (!result) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to process resume upload'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Resume uploaded and parsed successfully',
+        data: result
+      });
+    } catch (error: any) {
+      console.error('Resume upload error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to upload and parse resume'
+      });
+    }
   })
 );
 

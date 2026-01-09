@@ -57,11 +57,11 @@ export default function AnalyticsPage() {
   return (
     <div className="p-6 max-w-7xl">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">📈 Analytics</h1>
+          <h1 className="text-2xl font-bold text-gray-900">📈 Analytics</h1>
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value as '30d' | '90d' | '1y')}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
           >
             <option value="30d">Last 30 Days</option>
             <option value="90d">Last 90 Days</option>
@@ -82,8 +82,8 @@ export default function AnalyticsPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Total Interviews</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.totalInterviews}</p>
+                    <p className="text-xs font-medium text-gray-600">Total Interviews</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{analytics.totalInterviews}</p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-lg">
                     <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,8 +96,8 @@ export default function AnalyticsPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Completed</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.completedInterviews}</p>
+                    <p className="text-xs font-medium text-gray-600">Completed</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{analytics.completedInterviews}</p>
                   </div>
                   <div className="bg-green-100 p-3 rounded-lg">
                     <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,8 +110,8 @@ export default function AnalyticsPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Pending</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.pendingInterviews}</p>
+                    <p className="text-xs font-medium text-gray-600">Pending</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{analytics.pendingInterviews}</p>
                   </div>
                   <div className="bg-yellow-100 p-3 rounded-lg">
                     <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,8 +124,8 @@ export default function AnalyticsPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Avg. Rating</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.averageRating.toFixed(1)}</p>
+                    <p className="text-xs font-medium text-gray-600">Avg. Rating</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{analytics.averageRating.toFixed(1)}</p>
                   </div>
                   <div className="bg-purple-100 p-3 rounded-lg">
                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@ export default function AnalyticsPage() {
             {/* Completion Rate */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Completion Rate</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Completion Rate</h2>
                 <div className="flex items-center gap-4">
                   <div className="relative w-24 h-24">
                     <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
@@ -156,11 +156,11 @@ export default function AnalyticsPage() {
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xl font-bold text-gray-900">{analytics.completionRate}%</span>
+                      <span className="text-lg font-bold text-gray-900">{analytics.completionRate}%</span>
                     </div>
                   </div>
                   <div>
-                    <p className="text-gray-600">
+                    <p className="text-sm text-gray-600">
                       {analytics.completedInterviews} out of {analytics.totalInterviews} interviews completed
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
 
               {/* Top Performers */}
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Candidates</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Top Candidates</h2>
                 <div className="space-y-3">
                   {analytics.topPerformers.length > 0 ? (
                     analytics.topPerformers.map((performer, idx) => (
@@ -196,26 +196,26 @@ export default function AnalyticsPage() {
             {/* Monthly Trend */}
             {analytics.monthlyProgress.length > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Trend</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Monthly Trend</h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Month</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Month</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Total</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Completed</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {analytics.monthlyProgress.map((month) => (
                         <tr key={month.month} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-900">{new Date(month.month + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })}</td>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{month.interviews}</td>
-                          <td className="px-4 py-3 text-sm font-medium text-green-600">{month.completed}</td>
-                          <td className="px-4 py-3 text-sm">
+                          <td className="px-4 py-3 text-xs text-gray-900">{month.month}</td>
+                          <td className="px-4 py-3 text-xs font-medium text-gray-900">{month.interviews}</td>
+                          <td className="px-4 py-3 text-xs font-medium text-green-600">{month.completed}</td>
+                          <td className="px-4 py-3 text-xs">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              {Math.round((month.completed / month.interviews) * 100)}%
+                              {month.interviews > 0 ? Math.round((month.completed / month.interviews) * 100) : 0}%
                             </span>
                           </td>
                         </tr>

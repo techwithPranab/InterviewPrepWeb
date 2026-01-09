@@ -18,6 +18,8 @@ interface ApiResponse<T = any> {
   user?: any;
   token?: string;
   errors?: any;
+  interviews?: T;
+  stats?: any;
 }
 
 class ApiClient {
@@ -518,6 +520,90 @@ class ApiClient {
         message: error.message || 'Download failed'
       };
     }
+  }
+
+  // ==================== CANDIDATE PROFILE ENDPOINTS ====================
+
+  /**
+   * Upload resume (PDF only) and automatically parse with AI
+   */
+  async uploadResume(file: File) {
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    const url = `${this.baseURL}/users/resume/upload`;
+    const headers: Record<string, string> = {};
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok && !data.success) {
+        throw new Error(data.message || `HTTP Error: ${response.status}`);
+      }
+
+      return data;
+    } catch (error: any) {
+      console.error('Resume Upload Error:', error);
+      return {
+        success: false,
+        message: error.message || 'Resume upload failed'
+      };
+    }
+  }
+
+  /**
+   * Get current user's candidate profile
+   */
+  async getCandidateProfile() {
+    return this.get('/candidate-profiles/me');
+  }
+
+  /**
+   * Get candidate profile by ID
+   */
+  async getCandidateProfileById(profileId: string) {
+    return this.get(`/candidate-profiles/${profileId}`);
+  }
+
+  /**
+   * Update candidate profile
+   */
+  async updateCandidateProfile(profileId: string, updates: any) {
+    return this.put(`/candidate-profiles/${profileId}`, updates);
+  }
+
+  /**
+   * Delete candidate profile
+   */
+  async deleteCandidateProfile(profileId: string) {
+    return this.delete(`/candidate-profiles/${profileId}`);
+  }
+
+  /**
+   * Generate personalized interview questions based on profile
+   */
+  async generateInterviewQuestions(profileId: string, skillFocus?: string[]) {
+    return this.post(`/candidate-profiles/${profileId}/generate-questions`, {
+      skillFocus
+    });
+  }
+
+  /**
+   * Re-parse resume with AI
+   */
+  async reparseProfile(profileId: string) {
+    return this.post(`/candidate-profiles/${profileId}/reparse`);
   }
 }
 

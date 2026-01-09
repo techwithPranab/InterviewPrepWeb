@@ -53,26 +53,28 @@ router.get(
   authorize('interviewer'),
   asyncHandler(async (req: Request, res: Response) => {
     const interviewerId = (req as any).user.userId;
-
+    console.log('Interviewer ID:', interviewerId);
     // Get the interviewer's completed interviews count
     const totalInterviews = await ScheduledInterview.countDocuments({
-      interviewerId,
-      status: 'completed'
+      userId: interviewerId
     });
 
     // Get scheduled interviews count
     const scheduledInterviews = await ScheduledInterview.countDocuments({
-      interviewerId,
+      userId: interviewerId,
       status: 'scheduled'
     });
 
     // Get completed assessments count (same as completed interviews for now)
-    const completedAssessments = totalInterviews;
-
+    
+    const completedAssessments = await ScheduledInterview.countDocuments({
+      userId: interviewerId,
+      status: 'completed'
+    });
     // Get active candidates count (unique candidates with scheduled interviews)
-    const activeCandidates = await ScheduledInterview.distinct('candidateId', {
+    const activeCandidates = await ScheduledInterview.distinct('userId', {
       interviewerId,
-      status: { $in: ['scheduled', 'in-progress'] }
+      status: { $in: ['scheduled', 'confirmed'] }
     });
 
     // Get interviewer's average rating from User model
@@ -85,7 +87,7 @@ router.get(
       activeCandidates: activeCandidates.length,
       avgRating: Number(avgRating.toFixed(1))
     };
-
+    console.log('Interviewer Stats:', stats);
     res.json({
       success: true,
       stats
@@ -105,7 +107,7 @@ router.get(
     const interviewerId = (req as any).user.userId;
     const { sortBy = 'scheduledAt', sortOrder = 'desc', status } = req.query;
 
-    const filter: any = { interviewerId };
+    const filter: any = { userId:interviewerId };
 
     if (status && status !== 'all') {
       filter.status = status;
@@ -113,32 +115,25 @@ router.get(
 
     const sortOptions: any = {};
     sortOptions[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
-
+    console.log('Fetch Interviews Filter:', filter);
     const interviews = await ScheduledInterview.find(filter)
-      .populate('candidateId', 'firstName lastName email')
+      .populate('userId', 'firstName lastName email')
       .populate('interviewerId', 'firstName lastName email')
       .sort(sortOptions)
       .lean();
-
+    console.log('Fetched Interviews:', interviews);
     const formattedInterviews = interviews.map((interview: any) => ({
-      id: interview._id,
-      candidate: {
-        id: interview.candidateId?._id,
-        name: `${interview.candidateId?.firstName} ${interview.candidateId?.lastName}`,
-        email: interview.candidateId?.email
-      },
-      interviewer: {
-        id: interview.interviewerId?._id,
-        name: `${interview.interviewerId?.firstName} ${interview.interviewerId?.lastName}`,
-        email: interview.interviewerId?.email
-      },
+      _id: interview._id,
+      candidateName: interview.candidateName || `${interview.userId?.firstName} ${interview.userId?.lastName}`.trim(),
+      candidateEmail: interview.candidateEmail || interview.userId?.email,
+      skills: interview.skills || [],
       scheduledAt: interview.scheduledAt,
       duration: interview.duration,
       status: interview.status,
-      meetingLink: interview.meetingLink,
       notes: interview.notes,
-      createdAt: interview.createdAt,
-      updatedAt: interview.updatedAt
+      resumeUrl: interview.resumeUrl,
+      registrationLink: interview.registrationLink,
+      meetingLink: interview.meetingLink
     }));
 
     res.json({
